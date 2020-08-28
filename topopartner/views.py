@@ -238,9 +238,9 @@ def fit_linreg(_):
     linreg = models.LinRegModel.load()
     if models.Track.objects.filter(is_recording=True).exists():
         reg = utils.linear_regression(models.Track.objects.filter(is_recording=True))
-        linreg.intercept = reg.intercept_
-        linreg.coef_distance = reg.coef_[0]
-        linreg.coef_uphill = reg.coef_[1]
+        linreg.coef_distance = reg[0]
+        linreg.coef_uphill = reg[1]
+        linreg.intercept = reg[2]
         linreg.save()
         for track in models.Track.objects.filter(is_itinerary=True):
             track.predict_duration(linreg)

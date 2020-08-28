@@ -3,4 +3,3 @@ Django
 django-mathfilters
 gpxpy
 numpy
-sklearn

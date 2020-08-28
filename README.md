@@ -39,7 +39,6 @@ You'll need Python 3.6 or above.
 - [gpxpy](https://pypi.org/project/gpxpy/)
 - [OpenTopoMap](https://wiki.openstreetmap.org/wiki/OpenTopoMap)
 - [GPS Visualizer](https://www.gpsvisualizer.com/)
-- [scikit-learn](https://scikit-learn.org/stable/)
 - [Material Design Icons](https://material.io/resources/icons/)
 - [Bytesize Icons](https://github.com/danklammer/bytesize-icons)
 

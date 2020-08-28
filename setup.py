@@ -9,10 +9,9 @@ os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 
 setup(
     name='django-topopartner',
-    version='0.1.0',
+    version='0.1.1',
     packages=find_packages(),
     include_package_data=True,
-    # license='MIT License',
     description='A Django app for topographic data management.',
     long_description=README,
     url='https://yohan.chalier.fr/',
@@ -36,6 +35,5 @@ setup(
         "django-mathfilters",
         "gpxpy",
         "numpy",
-        "sklearn"
     ],
 )
