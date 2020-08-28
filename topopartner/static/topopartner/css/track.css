@@ -1,0 +1,53 @@
+.track_info__content {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.track_statistics {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+}
+
+.track_statistics img {
+    width: 32px;
+    height: 32px;
+}
+
+.track_statistics > * {
+    display: flex;
+    margin-right: 16px;
+    opacity: 1;
+    transition: .2s ease;
+}
+
+.track_statistics > a:hover {
+    opacity: .8;
+}
+
+.track_statistics__text {
+    height: 32px;
+    line-height: 32px;
+}
+
+.track_statistics__number {
+    font-weight: bold;
+    font-size: 24px;
+}
+
+.track_statistics__unit {
+    /* display: table-cell;
+    vertical-align:bottom; */
+    text-transform: uppercase;
+    height: 32px;
+}
+
+canvas {
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, .1);
+}

@@ -1,0 +1,38 @@
+
+.create_track_form {
+    margin-left: 25px;
+    width: 600px;
+}
+
+.create_track_form > p:first-child {
+    margin-top: 0;
+}
+
+.create_track_form__inputs {
+    display: flex;
+    flex-direction: column;
+}
+
+.create_track_form input {
+    margin-bottom: 15px;
+}
+
+.create_track_form input, .create_track_form textarea {
+    font: inherit;
+    padding: 8px;
+    background: none;
+    color: white;
+    border: 1px solid grey;
+    resize: none;
+    border-radius: 4px;
+}
+
+#polylines {
+    list-style: none;
+    padding-left: 0;
+}
+
+#polylines li {
+    display: flex;
+
+}

@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+    <head>
+        <meta charset="utf-8">
+        <title>Upload a track &mid; Topopartner</title>
+    </head>
+    <body>
+        <h1>Upload a track</h1>
+        <form action="" method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <input type="text" name="label" placeholder="Label"><br>
+            <textarea name="comment" rows="8" cols="80" placeholder="Comment"></textarea><br>
+            <input type="file" name="gpx" /><br>
+            <input id="checkbox" type="checkbox" name="itinerary"/> <label for="checkbox">Is itinerary</label> <br>
+            <label for="visited">Date visited:</label> <input id="visited" type="date" name="visited" placeholder="Date visited"/>  <br>
+            <input type="submit">
+        </form>
+    </body>
+</html>

@@ -1,0 +1,124 @@
+html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+}
+
+body {
+    font-family: "Lato", sans-serif;
+    background-color: #202020;
+    background-image: url("../img/pattern8.jpg");
+    background-repeat: repeat;
+    color: #EEE;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+p, ul, ol, td {
+    color: rgb(190, 190, 190);
+    font-size: 15px;
+    line-height: 24px;
+}
+
+header nav ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background-color: #333;
+}
+
+header nav ul li {
+    float: left;
+}
+
+header nav ul li .suptitle {
+    display: block;
+    padding: 14px 16px;
+    font-weight: bold;
+    color: white;
+}
+
+header nav ul li a {
+    display: block;
+    color: white;
+    text-align: center;
+    padding: 14px 16px;
+    text-decoration: none;
+}
+
+header nav ul li a .small {
+    display: none;
+}
+
+header nav ul li a:hover {
+    background-color: #111;
+}
+
+.active {
+    background-color: #4CAF50;
+}
+
+.highlight {
+    color: #4CAF50;
+}
+
+.main_section {
+    padding: 0 32px;
+    height: 100%;
+}
+
+a.transparent {
+    color: inherit;
+    font: inherit;
+    text-decoration: none;
+}
+
+h1 {
+    font-size: 34px;
+    /* height: 46px; */
+    line-height: 46px;
+}
+
+.cmd_button {
+    display: inline-block;
+    padding: 14px 16px;
+    margin-right: 8px;
+    border: 2px solid #4CAF50;
+    border-radius: 4px;
+    background: rgba(76, 175, 80, .6);
+    color: white;
+    cursor: pointer;
+    text-decoration: none;
+    font-size: 15px;
+    font-family: inherit;
+    transition: .2s ease;
+    line-height: 24px;
+}
+
+.cmd_button:hover {
+    background: rgba(76, 175, 80, .2);
+}
+
+.cmd_button:disabled {
+    opacity: .5;
+}
+
+.cmd_button:hover:disabled {
+    background: rgba(76, 175, 80, .6);
+}
+
+.map_layout {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+}
+
+.map_layout>*:last-child {
+    margin-left: 25px;
+}
+
+pre, code {
+    font-family: 'Fira Code', monospace;
+}

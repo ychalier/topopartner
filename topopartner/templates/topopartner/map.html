@@ -1,0 +1,35 @@
+{% load static %}
+
+<script type="text/javascript" src="{% static 'topopartner/js/map.js' %}"></script>
+
+<template id="template_marker_popup">
+    <div class="marker_popup">
+        <small><b>Label</b></small>
+        <input type="text" name="label" value="" placeholder="Waypoint's label" />
+        <small><b>Comment</b></small>
+        <input type="text" name="comment" value="" placeholder="Description" />
+        <small><b>Elevation</b></small>
+        <input type="number" name="elevation" placeholder="Elevation" value="" step="any" />
+        <small><b>Category</b></small>
+        <select name="category">
+            {% for category in mapdata.categories %}
+            <option value="-1">None</option>
+            <option value="{{ category.id }}">{{ category.name }}</option>
+            {% endfor %}
+        </select>
+        Visited <input type="checkbox" name="visited" placeholder="Visited" />
+        <button type="button" name="delete">Delete</button>
+    </div>
+</template>
+
+<template id="template_polyline_panel">
+    <div class="polyline">
+        <span class="polyline_label"></span>
+        <button class="cmd_button" type="button" name="remove">Remove</button>
+        <button class="cmd_button" type="button" name="save">Save</button>
+    </div>
+</template>
+
+<div class="map" id="map"></div>
+
+<script type="text/javascript">{% include 'topopartner/map.js' %}</script>

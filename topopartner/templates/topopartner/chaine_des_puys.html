@@ -1,0 +1,78 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <title>Chaîne des Puys</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <link rel="stylesheet" href="{% static 'topopartner/css/chaine_des_puys.css' %}" />
+    <script src="https://unpkg.com/panzoom@9.2.4/dist/panzoom.min.js"></script>
+</head>
+
+<body>
+    <object id="svgObject" style="display:none" type="image/svg+xml" data="{% static 'topopartner/chaine_des_puys.svg' %}"></object>
+    <div class="map">
+        <!--<img src="{% static 'topopartner/chaine_des_puys.svg' %}" alt="">-->
+
+
+    </div>
+    <div class="header_wrapper">
+        <header>
+            <h1>Chaîne des Puys</h1>
+            <div class="progress">
+                <div class="bar" style="width: {{visit_percent}}%">
+                    <span class="bar_progress">{{visit_current}}/{{visit_total}}</span>
+                </div>
+            </div>
+            <div id="about">
+                <p><span class="toggle_button" id="about_button">[à propos]</span> <span class="toggle_button" id="list_button">[liste]</span></p>
+                <div class="toggle_content" id="about_content">
+                    <p>
+                        Visualisation de la chaîne des Puys, inscrite au patrimoine mondial de l'UNESCO en 2018.
+                    </p>
+                    <p>
+                        La liste des puys est tirée de <a href="https://fr.wikipedia.org/wiki/Cha%C3%AEne_des_Puys">Wikipédia</a>, bien que manquant de précision et de données sourcées. Les données topographiques proviennent de la mission "<a
+                            href="https://www2.jpl.nasa.gov/srtm/">SRTM</a>" de la NASA, et sont extraites grâve à l'outil <a href="https://wiki.openstreetmap.org/wiki/Srtm2Osm">Srtm2Osm</a>. Le script de conversion en SVG+HTML est disponible sur <a
+                            href="https://github.com/ychalier/chaine-des-puys">GitHub</a>. La navigation sur la carte est implémentée par le module <a href="https://github.com/anvaka/panzoom">panzoom</a>.
+                    </p>
+                    <p>
+                        J'ai pu visiter les puys en bleu; pas encore les puys en rouge. La barre de progression ci-dessus indique la progression globale de ma visite de la chaîne.
+                    </p>
+                </div>
+                <div class="toggle_content" id="list_content">
+                    <p>
+                        Du nord au sud:
+                    </p>
+                    <ul>
+                        {% for waypoint in waypoints %}
+                        <li {% if waypoint.visited %} class="visited" {% endif%}>{{ waypoint.label }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </header>
+    </div>
+
+
+
+    <script type="text/javascript">
+        var WAYPOINTS = [];
+        {% for waypoint in waypoints %}
+        WAYPOINTS.push({
+            x: {{ waypoint.x }},
+            y: {{ waypoint.y }},
+            label: "{{ waypoint.label }}",
+            visited: {% if waypoint.visited %}true{% else %}false{% endif%},
+        });
+        {% endfor %}
+    </script>
+
+    <script src="{% static 'topopartner/js/chaine_des_puys.js' %}"></script>
+
+
+
+</body>
+
+</html>

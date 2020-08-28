@@ -1,0 +1,80 @@
+{% extends 'topopartner/base.html' %}
+{% load mathfilters %}
+{% load static %}
+
+{% block title %}{{ track.label }} &mid; Tracks &mid; {{ block.super }}{% endblock title %}
+
+{% block head %}
+{{ block.super }}
+<link rel="stylesheet" href="{% static 'topopartner/css/map.css' %}">
+<link rel="stylesheet" href="{% static 'topopartner/css/track.css' %}">
+{% endblock head %}
+
+{% block body %}
+<h1><span class="highlight">{% if track.is_itinerary %}<a class="transparent" href="{% url 'topopartner:itineraries' %}">Itineraries{% else %}<a class="transparent" href="{% url 'topopartner:recordings' %}">Recordings{% endif %} &#10093;</a></span> {{ track.label }}</h1>
+
+<div class="track_info map_layout">
+
+    {% include 'topopartner/map.html '%}
+
+    <div class="track_info__item">
+        <div class="track_info__content">
+            <div class="">
+                <div class="track_statistics">
+                    <span>
+                        <img src="{% static 'topopartner/icons/run_circle-white-18dp.svg' %}" alt="Distance">
+                        <span class="track_statistics__text">
+                            <span class="track_statistics__number">{% if track.distance %}{{ track.distance | mul:.001 | floatformat }}{% else %}&ndash;&ndash;{% endif %}</span><span class="track_statistics__unit">km</span>
+                        </span>
+                    </span>
+                    <span>
+                        <img src="{% static 'topopartner/icons/terrain-white-18dp.svg' %}" alt="Uphill">
+                        <span class="track_statistics__text">
+                            <span class="track_statistics__number">{% if track.uphill %}{{ track.uphill | floatformat:"0" }}{% else %}&ndash;&ndash;{% endif %}</span><span class="track_statistics__unit">m</span>
+                        </span>
+                    </span>
+                    <span>
+                        {% if track.is_itinerary %}
+                        <img src="{% static 'topopartner/icons/history_toggle_off-white-18dp.svg' %}" alt="Duration">
+                        {% else %}
+                        <img src="{% static 'topopartner/icons/timer-white-18dp.svg' %}" alt="Duration">
+                        {% endif %}
+                        <span class="track_statistics__text">
+                            <span class="track_statistics__number">{% if track.duration %}{{ track.pretty_duration }}{% else %}&ndash;&ndash;{% endif %}</span>
+                        </span>
+                    </span>
+                    <a class="transparent" href="https://www.google.com/maps/dir//{{ track.start.latitude }}%2C{{ track.start.longitude }}" title="Car directions"><img src="{% static 'topopartner/icons/directions_car-white-18dp.svg' %}" alt="Car directions" /></a>
+                    <a class="transparent" href="{% url 'topopartner:gpx' tid=track.id %}" title="Download GPX file"><img src="{% static 'topopartner/icons/map-white-18dp.svg' %}" alt="GPX" /></a>
+                </div>
+                {% if track.comment %}
+                <p>
+                    {{ track.comment | safe }}
+                </p>
+                {% endif %}
+                {% if track.date_visited %}
+                <p>
+                    Recorded on {{ track.date_visited }}.
+                </p>
+                {% endif %}
+                {% if request.user.is_authenticated %}
+                <p>
+                    <a class="cmd_button" href="{% url 'topopartner:edit_track' tid=track.id %}">Edit</a>
+                    <a class="cmd_button" href="{% url 'topopartner:fetch_elevation_data' tid=track.id %}">Fetch elevation</a>
+                </p>
+                {% endif %}
+            </div>
+            <canvas id="elevation_profile" width="600" height="300"></canvas>
+            <script type="text/javascript" src="{% static 'topopartner/js/elevation.js' %}"></script>
+            <script type="text/javascript">
+                let ctx = document.getElementById("elevation_profile").getContext('2d');
+                let data = [{% for d, e in elevation_data %}{x: {{d|floatformat:0}}, y: {{e|floatformat:0}} }, {% endfor %}];
+                createElevationProfile(ctx, data);
+            </script>
+        </div>
+
+    </div>
+
+
+
+</div>
+{% endblock body %}

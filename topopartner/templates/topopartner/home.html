@@ -1,0 +1,29 @@
+{% extends 'topopartner/base.html' %}
+{% load static %}
+
+{% block title %}Home &mid; {{ block.super }}{% endblock title %}
+
+{% block body %}
+
+<h1>Topopartner</h1>
+
+<p style="max-width: 700px;">
+    <b>Topopartner</b> is a Django application dedicated to topographic personal data management.
+    Namely, it holds a database of <b>waypoints</b> and <b>tracks</b>.
+    It offers a track edition interface, GPX exports, elevation profile plots, hike duration prediction, and more.
+    It greatly relies on the
+    <span class="highlight"><a class="transparent" href="https://leafletjs.com/">Leaflet</a></span>
+    library,
+    <span class="highlight"><a class="transparent" href="https://wiki.openstreetmap.org/wiki/OpenTopoMap">OpenTopoMap</a></span>
+    maps, and
+    <span class="highlight"><a class="transparent" href="https://www.gpsvisualizer.com/">GPS Visualizer</a></span>
+    features.
+</p>
+
+<p>
+    Developed by <a class="transparent" href="https://yohan.chalier.fr">Yohan Chalier</a>.
+    Available on
+    <span class="highlight"><a class="transparent" href="https://github.com/ychalier/topopartner">GitHub</a></span>.
+</p>
+
+{% endblock body %}

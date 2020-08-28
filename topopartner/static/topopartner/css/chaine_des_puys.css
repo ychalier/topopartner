@@ -1,0 +1,138 @@
+body {
+    background: #fffee0;
+}
+
+header {
+    max-width: 264px;
+    display: flex;
+    flex-direction: column;
+    text-align: center;
+    position: absolute;
+    top: 0;
+    left: 22px;
+    font-family: Consolas;
+    z-index: 1000;
+}
+
+.map {
+    z-index 1;
+}
+
+svg {
+    z-index: 1;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+}
+
+path {
+    transition: .2s linear;
+}
+
+path:hover {
+    stroke: crimson;
+}
+
+g text {
+    pointer-events: none;
+    opacity: 0;
+    font-family: Consolas;
+    stroke-linecap: butt;
+    stroke-linejoin: miter;
+    stroke-width: 1px;
+    stroke: white;
+    paint-order: stroke;
+    cursor: default;
+    transition: .2s ease;
+}
+
+g circle {}
+
+g circle:hover~text, g circle:active~text, g circle:focus~text {
+    opacity: 1;
+}
+
+.progress {
+    border: 2px solid black;
+    /*width: 100%;*/
+    height: 24px;
+}
+
+.bar {
+    background: crimson;
+    height: 24px;
+    border-right: 1px solid black;
+}
+
+.bar_progress {
+    color: white;
+    line-height: 24px;
+}
+
+header a {
+    color: black;
+}
+
+@media all and (max-width:800px) {
+    .header_wrapper {
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+    }
+
+    header {
+        position: relative;
+        top: 0;
+        left: 0;
+    }
+}
+
+#about {
+    text-align: left;
+}
+
+.toggle_button {
+    cursor: pointer;
+    user-select: none;
+}
+
+.toggle_button:hover {
+    text-decoration: underline;
+}
+
+.toggle_content {
+    display: none;
+    border-left: 1px solid black;
+    padding-left: 8px;
+    margin-top: 0;
+}
+
+.toggle_content.show {
+    display: block;
+}
+
+ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+li {
+    padding-left: 1em;
+    text-indent: -.7em;
+}
+
+li::before {
+    content: "• ";
+    color: red;
+}
+
+li.visited::before {
+    color: blue;
+}
+
+li.visited {
+    text-decoration: line-through;
+}

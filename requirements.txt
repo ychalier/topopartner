@@ -1,0 +1,6 @@
+requests
+Django
+django-mathfilters
+gpxpy
+numpy
+sklearn

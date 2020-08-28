@@ -1,0 +1,42 @@
+.main_section {
+    display: flex;
+    flex-direction: column;
+}
+
+.waypoints_layout {
+    padding-top: 25px;
+    padding-bottom: 25px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.waypoints_layout > .map {
+    height: 100%;
+    z-index: 0;
+}
+
+.cmd_button {
+    position: absolute;
+    bottom: 32px;
+    right: 32px;
+    z-index: 1;
+    border: 2px solid #3a873d;
+    background: rgba(76, 175, 80, .9);
+    opacity: 1;
+}
+
+.cmd_button:hover {
+    background: rgba(76, 175, 80, .8);
+    opacity: 1;
+}
+
+.cmd_button:disabled {
+    background: rgba(76, 175, 80, .6);
+    opacity: .5;
+}
+
+.cmd_button:hover:disabled {
+    background: rgba(76, 175, 80, .6);
+    opacity: .5;
+}

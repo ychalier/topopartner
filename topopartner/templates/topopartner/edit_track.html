@@ -1,0 +1,45 @@
+{% extends 'topopartner/base.html' %}
+{% load static %}
+
+{% block title %}Edit track &mid; {{ block.super }}{% endblock title %}
+
+{% block head %}
+{{ block.super }}
+<link rel="stylesheet" href="{% static 'topopartner/css/map.css' %}">
+<link rel="stylesheet" href="{% static 'topopartner/css/create_track.css' %}">
+{% endblock head %}
+
+{% block body %}
+<h1><span class="highlight"><a class="transparent" href="{% url 'topopartner:itineraries' %}">Itineraries &#10093;</a></span> <span class="highlight"><a class="transparent" href="{% url 'topopartner:view_track' tid=track.id %}">{{ track.label }} &#10093;</a></span> Edit</h1>
+<div class="create_track_layout map_layout">
+
+    {% include 'topopartner/map.html' %}
+
+    <div class="create_track_form">
+        <p class="create_track_form__inputs" id="track_form">
+            <input type="text" name="label"  placeholder="Label*" />
+            <textarea name="comment" rows="8" cols="80" placeholder="Comment"></textarea>
+            <span>
+                <input id="input_public" type="checkbox" name="public" {% if track.public %}checked{% endif %}/>
+                <label for="input_public">Make the track public</label>
+            </span>
+            <span>
+                <input id="input_itinerary" type="checkbox" name="itinerary" {% if track.is_itinerary %}checked{% endif %}/>
+                <label for="input_itinerary">Make the track an itinerary</label>
+            </span>
+        </p>
+        <p>
+            <button id="buttonClearTrack" class="cmd_button" type="button" name="button">Clear track</button>
+            <button id="buttonSaveTrack" class="cmd_button" type="button" name="button">Save</button>
+            <a class="cmd_button" href="{% url 'topopartner:delete_track' tid=track.id %}">Delete</a>
+        </p>
+    </div>
+    <script type="text/javascript">
+        mapWrapper.bindButtonClearTrack("buttonClearTrack");
+        mapWrapper.bindButtonSaveTrack("buttonSaveTrack");
+        mapWrapper.bindTrackForm("track_form");
+        document.querySelector("#track_form input[name='label']").value = "{{ track.label }}";
+        document.querySelector("#track_form textarea[name='comment']").value = "{{ track.comment }}";
+    </script>
+</div>
+{% endblock body %}

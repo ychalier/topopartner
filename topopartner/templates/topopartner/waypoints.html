@@ -1,0 +1,20 @@
+{% extends 'topopartner/base.html' %}
+{% load static %}
+
+{% block title %}Waypoints &mid; {{ block.super }}{% endblock title %}
+
+{% block head %}
+{{ block.super }}
+<link rel="stylesheet" href="{% static 'topopartner/css/map.css' %}">
+<link rel="stylesheet" href="{% static 'topopartner/css/Waypoints.css' %}">
+{% endblock head %}
+
+{% block body %}
+<div class="waypoints_layout">
+    {% include 'topopartner/map.html' %}
+    <button class="cmd_button" id="buttonSaveChanges" type="button" name="save_markers" disabled>Save Changes</button>
+</div>
+<script type="text/javascript">
+    mapWrapper.bindButtonSaveWaypoits("buttonSaveChanges");
+</script>
+{% endblock body %}
