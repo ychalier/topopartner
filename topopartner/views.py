@@ -6,6 +6,10 @@ from django.urls import reverse
 from django.http import Http404
 from django.template.defaultfilters import slugify
 from django.contrib.auth.decorators import login_required
+from django.core.exceptions import PermissionDenied
+from django.core.exceptions import SuspiciousOperation
+import dateutil.parser
+import gpxpy.gpx
 from . import models
 from . import utils
 
@@ -238,9 +242,9 @@ def fit_linreg(_):
     linreg = models.LinRegModel.load()
     if models.Track.objects.filter(is_recording=True).exists():
         reg = utils.linear_regression(models.Track.objects.filter(is_recording=True))
-        linreg.intercept = reg.intercept_
-        linreg.coef_distance = reg.coef_[0]
-        linreg.coef_uphill = reg.coef_[1]
+        linreg.coef_distance = reg[0]
+        linreg.coef_uphill = reg[1]
+        linreg.intercept = reg[2]
         linreg.save()
         for track in models.Track.objects.filter(is_itinerary=True):
             track.predict_duration(linreg)
@@ -271,3 +275,72 @@ def chaine_des_puys(request):
         "visit_total": visit_total,
         "visit_percent": visit_percent,
     })
+
+
+def check_api_key(request):
+    key = request.GET.get("k")
+    if models.ApiKey.objects.filter(key=key).exists():
+        return
+    raise PermissionDenied()
+
+
+def api_list_itineraries(request):
+    check_api_key(request)
+    itineraries = models.Track.objects\
+        .filter(is_itinerary=True)\
+        .order_by("-date_added")
+    data = {"itineraries": []}
+    for itinerary in itineraries:
+        data["itineraries"].append({
+            "label": itinerary.label,
+            "tid": itinerary.id,
+            "date_added": itinerary.date_added.isoformat(),
+            "date_modified": itinerary.date_modified.isoformat(),
+        })
+    return HttpResponse(json.dumps(data), content_type="application/json")
+
+
+def api_get_itinerary(request):
+    check_api_key(request)
+    tid = request.GET.get("tid")
+    if models.Track.objects.filter(id=tid).exists():
+        track = models.Track.objects.get(id=tid)
+        data = {
+            "label": track.label,
+            "comment": track.comment,
+            "date_added": track.date_added.isoformat(),
+            "date_modified": track.date_modified.isoformat(),
+            "gpx": track.gpx,
+        }
+        return HttpResponse(json.dumps(data), content_type="application/json")
+    raise Http404("Track does not exist.")
+
+
+def api_post_recording(request):
+    check_api_key(request)
+    try:
+        data = json.loads(request.body.decode())
+    except json.JSONDecodeError:
+        raise SuspiciousOperation("Invalid JSON body.")
+    if "label" not in data:
+        raise SuspiciousOperation("No label found.")
+    if "comment" not in data:
+        raise SuspiciousOperation("No comment found.")
+    if "gpx" not in data:
+        raise SuspiciousOperation("No GPX found.")
+    if "date_visited" not in data:
+        raise SuspiciousOperation("No date visited found.")
+    track = models.Track.objects.create(
+        label=data["label"],
+        comment=data["comment"],
+        gpx=data["gpx"],
+        is_itinerary=False,
+        is_recording=True,
+        date_visited=dateutil.parser.parse(data["date_visited"]),
+    )
+    try:
+        utils.compute_stats(track, save_values=True)
+    except gpxpy.gpx.GPXXMLSyntaxException:
+        track.delete()
+        raise SuspiciousOperation("Invalid GPX.")
+    return HttpResponse("", content_type="text/plain")

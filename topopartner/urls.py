@@ -16,5 +16,8 @@ urlpatterns = [
     path("upload", views.upload_track, name="upload_track"),
     path("fit", views.fit_linreg, name="fit_linreg"),
     path("chaine-des-puys", views.chaine_des_puys, name="chaine_des_puys"),
+    path("api/itinerary/list", views.api_list_itineraries, name="api_list_itineraries"),
+    path("api/itinerary/get", views.api_get_itinerary, name="api_get_itinerary"),
+    path("api/recording/post", views.api_post_recording, name="api_post_recording"),
     path("", views.home, name="home"),
 ]

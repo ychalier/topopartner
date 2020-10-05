@@ -114,3 +114,8 @@ class LinRegModel(SingletonModel):
     intercept = models.FloatField(default=0)
     coef_distance = models.FloatField(default=0)
     coef_uphill = models.FloatField(default=0)
+
+
+class ApiKey(models.Model):
+
+    key = models.CharField(max_length=32)
