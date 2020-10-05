@@ -9,6 +9,7 @@ import logging
 import requests
 import gpxpy.gpx
 import numpy
+import sklearn.linear_model
 from . import models
 
 
@@ -169,8 +170,8 @@ def linear_regression(tracks):
         features[i, 0] = track.distance
         features[i, 1] = track.uphill
         targets[i] = track.duration.total_seconds()
-    stacked = numpy.vstack([features.T, numpy.ones(len(features))]).T
-    return numpy.linalg.lstsq(stacked, targets, rcond=None)[0]
+    reg = sklearn.linear_model.LinearRegression().fit(features, targets)
+    return reg
 
 
 def latlng_to_xy(lat, lng):
