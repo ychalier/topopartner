@@ -296,6 +296,8 @@ def api_list_itineraries(request):
             "tid": itinerary.id,
             "date_added": itinerary.date_added.isoformat(),
             "date_modified": itinerary.date_modified.isoformat(),
+            "distance": itinerary.distance,
+            "uphill": itinerary.uphill,
         })
     return HttpResponse(json.dumps(data), content_type="application/json")
 
@@ -311,6 +313,8 @@ def api_get_itinerary(request):
             "date_added": track.date_added.isoformat(),
             "date_modified": track.date_modified.isoformat(),
             "gpx": track.gpx,
+            "distance": track.distance,
+            "uphill": track.uphill,
         }
         return HttpResponse(json.dumps(data), content_type="application/json")
     raise Http404("Track does not exist.")
