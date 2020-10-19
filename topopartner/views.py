@@ -6,6 +6,7 @@ from django.urls import reverse
 from django.http import Http404
 from django.template.defaultfilters import slugify
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.csrf import csrf_exempt
 from django.core.exceptions import PermissionDenied
 from django.core.exceptions import SuspiciousOperation
 import dateutil.parser
@@ -320,6 +321,7 @@ def api_get_itinerary(request):
     raise Http404("Track does not exist.")
 
 
+@csrf_exempt
 def api_post_recording(request):
     check_api_key(request)
     try:
