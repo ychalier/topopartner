@@ -299,6 +299,7 @@ def api_list_itineraries(request):
             "date_modified": itinerary.date_modified.isoformat(),
             "distance": itinerary.distance,
             "uphill": itinerary.uphill,
+            "gpx": itinerary.gpx,
         })
     return HttpResponse(json.dumps(data), content_type="application/json")
 
