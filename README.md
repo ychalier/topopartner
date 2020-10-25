@@ -2,6 +2,8 @@
 
 **Topopartner** is a [Django](https://www.djangoproject.com/) application dedicated to topographic personal data management. Namely, it holds a database of **waypoints** and **tracks**. It offers a track edition interface, GPX exports, elevation profile plots, hike duration prediction, and more.
 
+Check out [ychalier/topopartner-android](https://github.com/ychalier/topopartner-android) for an example of Android client.
+
 ## Getting Started
 
 ### Prerequisites
