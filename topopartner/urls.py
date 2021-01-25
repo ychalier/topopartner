@@ -4,6 +4,7 @@ from . import views
 app_name = "topopartner"
 
 urlpatterns = [
+    path("tracks", views.view_tracks, name="tracks"),
     path("itineraries", views.tracks_itineraries, name="itineraries"),
     path("recordings", views.tracks_recordings, name="recordings"),
     path("waypoints", views.waypoints, name="waypoints"),

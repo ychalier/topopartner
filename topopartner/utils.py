@@ -15,16 +15,16 @@ from . import models
 LOGGER = logging.getLogger(__name__)
 
 
-def gather_map_data():
+def gather_map_data(request):
     """Gather basic data for the creation of the Leafleat map. Plots the map
     with the waypoints from the database, with bounds to fit them.
     """
     data = {
         "waypoints": list(),
-        "categories": models.WaypointCategory.objects.all()
+        "categories": models.WaypointCategory.objects.filter(user=request.user)
     }
     count, lats, lngs = 0, list(), list()
-    for waypoint in models.Waypoint.objects.all():
+    for waypoint in models.Waypoint.objects.filter(user=request.user):
         count += 1
         data["waypoints"].append(waypoint)
         lats.append(waypoint.latitude)

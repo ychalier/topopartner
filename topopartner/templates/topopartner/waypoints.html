@@ -6,15 +6,14 @@
 {% block head %}
 {{ block.super }}
 <link rel="stylesheet" href="{% static 'topopartner/css/map.css' %}">
-<link rel="stylesheet" href="{% static 'topopartner/css/waypoints.css' %}">
 {% endblock head %}
 
-{% block body %}
-<div class="waypoints_layout">
+{% block main_content %}
+<div class="levitate-container">
     {% include 'topopartner/map.html' %}
-    <button class="cmd_button" id="buttonSaveChanges" type="button" name="save_markers" disabled>Save Changes</button>
+    <button class="levitate levitate-south-east btn btn-primary" id="buttonSaveChanges" type="button" name="save_markers" disabled>Save Changes</button>
 </div>
 <script type="text/javascript">
     mapWrapper.bindButtonSaveWaypoits("buttonSaveChanges");
 </script>
-{% endblock body %}
+{% endblock main_content %}

@@ -9,6 +9,7 @@ from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
 from django.core.exceptions import PermissionDenied
 from django.core.exceptions import SuspiciousOperation
+from piweb.decorators import require_app_access
 import dateutil.parser
 import gpxpy.gpx
 from . import models
@@ -21,29 +22,38 @@ def home(request):
     return render(request, "topopartner/home.html", {})
 
 
-@login_required
+def get_track_from_tid(tid, required_user=None, allow_public=False):
+    if not models.Track.objects.filter(id=tid).exists():
+        raise Http404("Track does not exist")
+    track = models.Track.objects.get(id=tid)
+    if not allow_public and (required_user is not None and track.user != required_user):
+        raise PermissionDenied
+    return track
+
+
+@require_app_access("topopartner")
 def waypoints(request):
     """View of the waypoints in the database.
     """
     if request.method == "POST":
         return create_or_update_waypoint(request)
-    data = utils.gather_map_data()
+    data = utils.gather_map_data(request)
     data["edit"] = "marker"
     return render(request, "topopartner/waypoints.html", {
         "mapdata": data,
     })
 
 
-@login_required
+@require_app_access("topopartner")
 def create_or_update_waypoint(request):
     """Parse the POST body content (expecting a JSON) to update the waypoints
     in the database.
     """
     for item in json.loads(request.body.decode("utf-8")):
-        if models.Waypoint.objects.filter(id=item["data"]["mid"]).exists():
-            waypoint = models.Waypoint.objects.get(id=item["data"]["mid"])
+        if models.Waypoint.objects.filter(id=item["data"]["mid"], user=request.user).exists():
+            waypoint = models.Waypoint.objects.get(id=item["data"]["mid"], user=request.user)
         else:
-            waypoint = models.Waypoint.objects.create(label="", latitude=0, longitude=0)
+            waypoint = models.Waypoint.objects.create(label="", latitude=0, longitude=0, user=request.user)
         if item["status"]["delete"]:
             waypoint.delete()
             continue
@@ -54,35 +64,52 @@ def create_or_update_waypoint(request):
         waypoint.comment = item["data"]["comment"]
         waypoint.visited = item["data"]["visited"]
         if item["data"]["category"] is not None\
-            and models.WaypointCategory.objects.filter(id=int(item["data"]["category"])):
-            category = models.WaypointCategory.objects.get(id=int(item["data"]["category"]))
+            and models.WaypointCategory.objects.filter(id=int(item["data"]["category"]), user=request.user).exists():
+            category = models.WaypointCategory.objects.get(id=int(item["data"]["category"]), user=request.user)
             waypoint.category = category
         else:
             waypoint.category = None
         waypoint.save()
     return HttpResponse(reverse("topopartner:waypoints"), content_type="text/plain")
 
+@require_app_access("topopartner")
+def view_tracks(request):
+    """Summary of the existing tracks.
+    """
+    itineraries = models.Track.objects\
+        .filter(is_itinerary=True, user=request.user)\
+        .order_by("-date_added")
+    recordings = models.Track.objects\
+        .filter(is_recording=True, user=request.user)\
+        .order_by("-date_visited")
+    linreg, _ = models.LinRegModel.objects.get_or_create(user=request.user)
+    return render(request, "topopartner/tracks.html", {
+        "itineraries": itineraries,
+        "recordings": recordings,
+        "linreg": linreg
+    })
 
-@login_required
+
+@require_app_access("topopartner")
 def tracks_itineraries(request):
     """Summary of the existing tracks.
     """
     itineraries = models.Track.objects\
-        .filter(is_itinerary=True)\
+        .filter(is_itinerary=True, user=request.user)\
         .order_by("-date_added")
     return render(request, "topopartner/tracks_itineraries.html", {
         "itineraries": itineraries,
     })
 
 
-@login_required
+@require_app_access("topopartner")
 def tracks_recordings(request):
     """Summary of the existing tracks.
     """
     recordings = models.Track.objects\
-        .filter(is_recording=True)\
+        .filter(is_recording=True, user=request.user)\
         .order_by("-date_visited")
-    linreg = models.LinRegModel.load()
+    linreg, _ = models.LinRegModel.objects.get_or_create(user=request.user)
     return render(request, "topopartner/tracks_recordings.html", {
         "recordings": recordings,
         "linreg": linreg
@@ -92,12 +119,8 @@ def tracks_recordings(request):
 def view_track(request, tid):
     """Simple view for a track.
     """
-    if not models.Track.objects.filter(id=tid).exists():
-        raise Http404("Track does not exist or is not public.")
-    track = models.Track.objects.get(id=tid)
-    if not request.user.is_authenticated and not track.public:
-        raise Http404("Track does not exist or is not public.")
-    mapdata = utils.gather_map_data()
+    track = get_track_from_tid(tid, required_user=request.user, allow_public=True)
+    mapdata = utils.gather_map_data(request)
     mapdata["track"] = list()
     for trkpt in track.iter_trackpoints():
         mapdata["track"].append([trkpt.latitude, trkpt.longitude])
@@ -109,11 +132,11 @@ def view_track(request, tid):
     })
 
 
-@login_required
-def fetch_elevation_data(_, tid):
+@require_app_access("topopartner")
+def fetch_elevation_data(request, tid):
     """Fetch the elevation data of a track and compute its stats afterwards.
     """
-    track = models.Track.objects.get(id=tid)
+    track = get_track_from_tid(tid, required_user=request.user)
     if not utils.fetch_elevation_data(track):
         return HttpResponse(
             "Could not fetch elevation data. Contact server admin and check the logs.",
@@ -126,27 +149,23 @@ def fetch_elevation_data(_, tid):
 def download_gpx(request, tid):
     """Return the GPX of a track as an attachment.
     """
-    if not models.Track.objects.filter(id=tid).exists():
-        raise Http404("Track does not exists!")
-    track = models.Track.objects.get(id=tid)
-    if not request.user.is_authenticated and not track.public:
-        raise Http404("Track does not exist or is not public.")
+    track = get_track_from_tid(tid, required_user=request.user, allow_public=True)
     response = HttpResponse(track.gpx, content_type="application/gpx+xml")
     response["Content-Disposition"] =\
         'attachment; filename="%s.gpx"' % slugify(track.label)
     return response
 
 
-@login_required
+@require_app_access("topopartner")
 def create_or_update_track(request, tid=None):
     """Parse the POST body content (expecting a JSON) to update the tracks
     in the database.
     """
     data = json.loads(request.body.decode("utf-8"))
     if tid is None:
-        track = models.Track.objects.create(label="", gpx="")
+        track = models.Track.objects.create(label="", gpx="", user=request.user)
     else:
-        track = models.Track.objects.get(id=tid)
+        track = get_track_from_tid(tid, required_user=request.user)
     if data["edited"]:
         track.gpx = utils.latlngs_to_gpx(data["latlngs"]).to_xml()
     track.label = data["label"]
@@ -165,14 +184,14 @@ def create_or_update_track(request, tid=None):
     )
 
 
-@login_required
+@require_app_access("topopartner")
 def edit_track(request, tid):
     """Edit a track.
     """
     if request.method == "POST":
         return create_or_update_track(request, tid)
-    track = models.Track.objects.get(id=tid)
-    mapdata = utils.gather_map_data()
+    track = get_track_from_tid(tid, required_user=request.user)
+    mapdata = utils.gather_map_data(request)
     if track.is_itinerary:
         mapdata["edit"] = "polyline"
     mapdata["track"] = list()
@@ -184,26 +203,24 @@ def edit_track(request, tid):
     })
 
 
-@login_required
+@require_app_access("topopartner")
 def create_track(request):
     """Create a track.
     """
     if request.method == "POST":
         return create_or_update_track(request)
-    mapdata = utils.gather_map_data()
+    mapdata = utils.gather_map_data(request)
     mapdata["edit"] = "polyline"
     return render(request, "topopartner/create_track.html", {
         "mapdata": mapdata,
     })
 
 
-@login_required
+@require_app_access("topopartner")
 def delete_track(_, tid):
     """Delete a track.
     """
-    if not models.Track.objects.filter(id=tid).exists():
-        raise Http404("Track does not exists!")
-    track = models.Track.objects.get(id=tid)
+    track = get_track_from_tid(tid, required_user=request.user)
     is_itinerary = track.is_itinerary
     track.delete()
     if is_itinerary:
@@ -211,7 +228,7 @@ def delete_track(_, tid):
     return redirect("topopartner:recordings")
 
 
-@login_required
+@require_app_access("topopartner")
 def upload_track(request):
     """Upload a GPX.
     """
@@ -224,6 +241,7 @@ def upload_track(request):
     is_itinerary = "itinerary" in request.POST
     is_recording = not is_itinerary
     track = models.Track.objects.create(
+        user=request.user,
         label=request.POST["label"],
         comment=request.POST.get("comment"),
         gpx=request.FILES["gpx"].read().decode(),
@@ -236,18 +254,18 @@ def upload_track(request):
     return redirect("topopartner:view_track", tid=track.id)
 
 
-@login_required
-def fit_linreg(_):
+@require_app_access("topopartner")
+def fit_linreg(request):
     """Fit the linear regression model.
     """
-    linreg = models.LinRegModel.load()
-    if models.Track.objects.filter(is_recording=True).exists():
-        reg = utils.linear_regression(models.Track.objects.filter(is_recording=True))
+    linreg, _ = models.LinRegModel.objects.get_or_create(user=request.user)
+    if models.Track.objects.filter(is_recording=True, user=request.user).exists():
+        reg = utils.linear_regression(models.Track.objects.filter(is_recording=True, user=request.user))
         linreg.coef_distance = reg[0]
         linreg.coef_uphill = reg[1]
         linreg.intercept = reg[2]
         linreg.save()
-        for track in models.Track.objects.filter(is_itinerary=True):
+        for track in models.Track.objects.filter(is_itinerary=True, user=request.user):
             track.predict_duration(linreg)
     return redirect("topopartner:recordings")
 
@@ -281,14 +299,14 @@ def chaine_des_puys(request):
 def check_api_key(request):
     key = request.GET.get("k")
     if models.ApiKey.objects.filter(key=key).exists():
-        return
-    raise PermissionDenied()
+        return models.ApiKey.objects.get(key=key).user
+    raise PermissionDenied
 
 
 def api_list_itineraries(request):
-    check_api_key(request)
+    user = check_api_key(request)
     itineraries = models.Track.objects\
-        .filter(is_itinerary=True)\
+        .filter(is_itinerary=True, user=user)\
         .order_by("-date_added")
     data = {"itineraries": []}
     for itinerary in itineraries:
@@ -305,10 +323,10 @@ def api_list_itineraries(request):
 
 
 def api_get_itinerary(request):
-    check_api_key(request)
+    user = check_api_key(request)
     tid = request.GET.get("tid")
-    if models.Track.objects.filter(id=tid).exists():
-        track = models.Track.objects.get(id=tid)
+    if models.Track.objects.filter(id=tid, user=user).exists():
+        track = models.Track.objects.get(id=tid, user=user)
         data = {
             "label": track.label,
             "comment": track.comment,
@@ -324,7 +342,7 @@ def api_get_itinerary(request):
 
 @csrf_exempt
 def api_post_recording(request):
-    check_api_key(request)
+    user = check_api_key(request)
     try:
         data = json.loads(request.body.decode())
     except json.JSONDecodeError:
@@ -338,6 +356,7 @@ def api_post_recording(request):
     if "date_visited" not in data:
         raise SuspiciousOperation("No date visited found.")
     track = models.Track.objects.create(
+        user=user,
         label=data["label"],
         comment=data["comment"],
         gpx=data["gpx"],

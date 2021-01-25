@@ -2,6 +2,7 @@
 import io
 import datetime
 from django.db import models
+from django.conf import settings
 import gpxpy
 
 
@@ -9,6 +10,7 @@ class WaypointCategory(models.Model):
 
     name = models.CharField(max_length=100)
     color = models.CharField(max_length=20)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
 
     def __str__(self):
         return self.name
@@ -16,6 +18,7 @@ class WaypointCategory(models.Model):
 
 class Waypoint(models.Model):
 
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     latitude = models.FloatField()
     longitude = models.FloatField()
     label = models.CharField(max_length=255)
@@ -36,6 +39,7 @@ class Waypoint(models.Model):
 
 class Track(models.Model):
 
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     label = models.CharField(max_length=255)
     comment = models.TextField(blank=True, null=True)
     illustration = models.URLField(blank=True, null=True)
@@ -90,26 +94,9 @@ class Track(models.Model):
             self.save()
 
 
-class SingletonModel(models.Model):
+class LinRegModel(models.Model):
 
-    class Meta:
-        abstract = True
-
-    def save(self, *args, **kwargs):
-        self.pk = 1
-        super(SingletonModel, self).save(*args, **kwargs)
-
-    def delete(self, *args, **kwargs):
-        pass
-
-    @classmethod
-    def load(cls):
-        obj, created = cls.objects.get_or_create(pk=1)
-        return obj
-
-
-class LinRegModel(SingletonModel):
-
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     fitted = models.BooleanField(default=False)
     intercept = models.FloatField(default=0)
     coef_distance = models.FloatField(default=0)
@@ -118,4 +105,5 @@ class LinRegModel(SingletonModel):
 
 class ApiKey(models.Model):
 
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     key = models.CharField(max_length=32)

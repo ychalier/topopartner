@@ -1,19 +1,45 @@
-<!DOCTYPE html>
-<html lang="en" dir="ltr">
-    <head>
-        <meta charset="utf-8">
-        <title>Upload a track &mid; Topopartner</title>
-    </head>
-    <body>
-        <h1>Upload a track</h1>
-        <form action="" method="post" enctype="multipart/form-data">
-            {% csrf_token %}
-            <input type="text" name="label" placeholder="Label"><br>
-            <textarea name="comment" rows="8" cols="80" placeholder="Comment"></textarea><br>
-            <input type="file" name="gpx" /><br>
-            <input id="checkbox" type="checkbox" name="itinerary"/> <label for="checkbox">Is itinerary</label> <br>
-            <label for="visited">Date visited:</label> <input id="visited" type="date" name="visited" placeholder="Date visited"/>  <br>
-            <input type="submit">
-        </form>
-    </body>
-</html>
+{% extends 'topopartner/base.html' %}
+
+{% block title %}Upload a track &mid; {{ block.super }}{% endblock title %}
+
+{% block main_content %}
+
+<h1>Upload a track</h1>
+<form action="" method="post" enctype="multipart/form-data">
+
+    {% csrf_token %}
+    
+    <div class="form-group">
+        <label class="form-label" for="input-label">Label</label>
+        <input class="form-input" id="input-label" type="text" name="label" placeholder="Label" />
+    </div>
+
+    <div class="form-group">
+        <label class="form-label" for="input-comment">Comment</label>
+        <textarea class="form-input" id="input-comment" name="comment" rows="8" cols="80" placeholder="Comment"></textarea>
+    </div>
+
+    <div class="form-group">
+        <label class="form-label" for="input-file">GPX File</label>
+        <input class="form-input" id="input-file" type="file" name="gpx" />
+    </div>
+
+    <div class="form-group">
+        <label class="form-switch">
+            <input id="checkbox" type="checkbox" name="itinerary"/>
+            <i class="form-icon"></i> Is itinerary
+        </label>
+    </div>
+
+    <div class="form-group">
+        <label class="form-label" for="input-visited">Date visited</label>
+        <input class="form-input" id="input-visited" type="date" name="visited" placeholder="Date visited"/>
+    </div>
+
+    <div class="form-group">
+        <button class="btn btn-primary">Upload</button>
+    </div>
+
+</form>
+
+{% endblock %}

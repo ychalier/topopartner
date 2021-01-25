@@ -145,12 +145,12 @@ class MapWrapper {
                 link.href = '#';
                 link.title = "Reset view";
                 link.innerHTML = HOME_SVG;
-        		L.DomEvent.on(link, 'click', L.DomEvent.stop)
+                L.DomEvent.on(link, 'click', L.DomEvent.stop)
                     .on(link, 'click', (event) => {
                         self.resetView();
                     }, this);
                 return container;
-        	}
+            }
         });
         this.leaflet.addControl(new L.ResetViewControl());
     }
@@ -605,3 +605,39 @@ class Waypoint {
     }
 
 }
+
+window.addEventListener("load", () => {
+    document.querySelectorAll(".still-map").forEach((item) => {
+        let elementId = item.getAttribute("id");
+        let data = item.getAttribute("data").slice(0, -1).split(";").map(s => s.split(",").map(x => parseFloat(x)));
+        let center = [0, 0];
+        data.forEach((pt) => {
+            center[0] += pt[0];
+            center[1] += pt[1];
+        });
+        center[0] /= data.length;
+        center[1] /= data.length;
+        let leaflet = L.map(
+            elementId, {
+                center: center,
+                zoom: 10,
+                zoomControl: false,
+                scrollWheelZoom: false,
+            }
+        );
+        leaflet.dragging.disable();
+        L.tileLayer(
+            "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png", {
+                maxNativeZoom: 17,
+                maxZoom: 17,
+                minZoom: 5,
+                noWrap: false,
+                opacity: 1,
+            }
+        ).addTo(leaflet);
+        let polyline = L.polyline(data, {
+            color: TRACK_COLOR,
+        }).addTo(leaflet);
+        leaflet.fitBounds(polyline.getBounds());
+    });
+});

@@ -1,0 +1,78 @@
+{% extends 'topopartner/base.html' %} {% load static %}
+
+{% block title %}Tracks &mid; {{ block.super }}{% endblock title %}
+
+{% block head %}
+{{ block.super }}
+<script src="{% static 'topopartner/js/map.js' %}"></script>
+{% endblock head %}
+
+{% block main_content %}
+
+<div class="tab-container">
+
+    <ul class="tab">
+        <li class="tab-item">
+            <a for="tab-itineraries">Itineraries</a>
+        </li>
+        <li class="tab-item">
+            <a for="tab-recordings">Recordings</a>
+        </li>
+        <li class="tab-item tab-action">
+            <div class="input-group input-inline">
+                <a class="btn btn-primary btn-sm input-group-btn" href="{% url 'topopartner:create_track' %}" title="Create an itinerary">Plan</a>
+                <a class="btn btn-primary btn-sm input-group-btn" href="{% url 'topopartner:upload_track' %}" title="Upload a recorded GPX track">Upload</a>
+                <a class="btn btn-primary btn-sm input-group-btn" href="{% url 'topopartner:fit_linreg' %}" title="Fit the linear regression model for predicting duration on those recorded tracks.">Fit</a>
+            </div>
+        </li>
+    </ul>
+
+    <div class="tab-content" id="tab-itineraries">
+        {% if itineraries %}
+        <div class="columns">
+            {% for track in itineraries %}
+            <div class="column col-6 col-sm-12">
+                {% include 'topopartner/map_card.html' %}
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty">
+            <div class="empty-icon">
+                <i class="icon icon-4x icon-route"></i>
+            </div>
+            <p class="empty-title h5">Empty</p>
+            <p class="empty-subtitle">Click the button below to create your first itinerary.</p>
+            <div class="empty-action">
+                <a class="btn btn-primary" href="{% url 'topopartner:create_track' %}">Create itinerary</a>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="tab-content" id="tab-recordings">
+        {% if recordings %}
+        <div class="columns">
+            {% for track in recordings %}
+            <div class="column col-6 col-sm-12">
+                {% include 'topopartner/map_card.html' %}
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty">
+            <div class="empty-icon">
+                <i class="icon icon-4x icon-route"></i>
+            </div>
+            <p class="empty-title h5">Empty</p>
+            <p class="empty-subtitle">Click the button below to upload your first recording.</p>
+            <div class="empty-action">
+                <a class="btn btn-primary" href="{% url 'topopartner:upload_track' %}">Upload track</a>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+</div>
+
+{% endblock main_content %}
