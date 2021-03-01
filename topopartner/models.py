@@ -78,7 +78,10 @@ class Track(models.Model):
         return next(self.iter_trackpoints())
 
     def pretty_duration(self):
-        minutes = int(self.duration.total_seconds() / 60.)
+        if self.duration is None:
+            minutes = 0
+        else:
+            minutes = int(self.duration.total_seconds() / 60.)
         hours = minutes // 60
         string = "%dh" % hours
         minutes -= 60 * hours

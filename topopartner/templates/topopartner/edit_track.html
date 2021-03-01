@@ -24,6 +24,7 @@
     <div class="column col-4 col-sm-12">
 
         <div>
+            <a class="btn btn-primary" href="{% url 'topopartner:fetch_elevation_data' tid=track.id %}">Fetch elevation</a>
             <button id="buttonClearTrack" class="btn btn-primary" type="button" name="button">Clear track</button>
             <a class="btn btn-primary" href="{% url 'topopartner:delete_track' tid=track.id %}">Delete track</a>
         </div>

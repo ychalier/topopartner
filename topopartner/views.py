@@ -133,6 +133,13 @@ def view_track(request, tid):
 
 
 @require_app_access("topopartner")
+def get_trackpoints(request, tid):
+    track = get_track_from_tid(tid, required_user=request.user)
+    data = [[trkpt.latitude, trkpt.longitude] for trkpt in track.iter_trackpoints()]
+    return HttpResponse(json.dumps(data), content_type="application/json")
+
+
+@require_app_access("topopartner")
 def fetch_elevation_data(request, tid):
     """Fetch the elevation data of a track and compute its stats afterwards.
     """
@@ -217,7 +224,7 @@ def create_track(request):
 
 
 @require_app_access("topopartner")
-def delete_track(_, tid):
+def delete_track(request, tid):
     """Delete a track.
     """
     track = get_track_from_tid(tid, required_user=request.user)

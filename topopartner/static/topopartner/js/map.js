@@ -608,36 +608,45 @@ class Waypoint {
 
 window.addEventListener("load", () => {
     document.querySelectorAll(".still-map").forEach((item) => {
-        let elementId = item.getAttribute("id");
-        let data = item.getAttribute("data").slice(0, -1).split(";").map(s => s.split(",").map(x => parseFloat(x)));
-        let center = [0, 0];
-        data.forEach((pt) => {
-            center[0] += pt[0];
-            center[1] += pt[1];
-        });
-        center[0] /= data.length;
-        center[1] /= data.length;
-        let leaflet = L.map(
-            elementId, {
-                center: center,
-                zoom: 10,
-                zoomControl: false,
-                scrollWheelZoom: false,
+        let route = item.getAttribute("route");
+        let request = new XMLHttpRequest();
+        request.open("GET", route, true);
+        request.onreadystatechange = function() {
+            if (this.readyState === XMLHttpRequest.DONE && this.status === 200) {
+                let elementId = item.getAttribute("id");
+                // let data = item.getAttribute("data").slice(0, -1).split(";").map(s => s.split(",").map(x => parseFloat(x)));
+                let data = JSON.parse(this.responseText);
+                let center = [0, 0];
+                data.forEach((pt) => {
+                    center[0] += pt[0];
+                    center[1] += pt[1];
+                });
+                center[0] /= data.length;
+                center[1] /= data.length;
+                let leaflet = L.map(
+                    elementId, {
+                        center: center,
+                        zoom: 10,
+                        zoomControl: false,
+                        scrollWheelZoom: false,
+                    }
+                );
+                leaflet.dragging.disable();
+                L.tileLayer(
+                    "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png", {
+                        maxNativeZoom: 17,
+                        maxZoom: 17,
+                        minZoom: 5,
+                        noWrap: false,
+                        opacity: 1,
+                    }
+                ).addTo(leaflet);
+                let polyline = L.polyline(data, {
+                    color: TRACK_COLOR,
+                }).addTo(leaflet);
+                leaflet.fitBounds(polyline.getBounds());
             }
-        );
-        leaflet.dragging.disable();
-        L.tileLayer(
-            "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png", {
-                maxNativeZoom: 17,
-                maxZoom: 17,
-                minZoom: 5,
-                noWrap: false,
-                opacity: 1,
-            }
-        ).addTo(leaflet);
-        let polyline = L.polyline(data, {
-            color: TRACK_COLOR,
-        }).addTo(leaflet);
-        leaflet.fitBounds(polyline.getBounds());
+        }
+        request.send();
     });
 });

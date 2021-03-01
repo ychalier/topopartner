@@ -39,7 +39,7 @@ function createElevationProfile(ctx, data) {
                     type: 'linear',
                     ticks: {
                         display: false,
-                        max: data[data.length - 1].x,
+                        max: data.length > 0 ? data[data.length - 1].x : 0,
                         stepSize: 1000,
                         callback: function(value, index, values) {
                             return (Math.round(.001 * value * 100) / 100);

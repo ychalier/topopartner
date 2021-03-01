@@ -3,7 +3,7 @@
 <div class="card my-2 {% if track.is_itinerary %}{% else %}{% endif %}">
     <div class="card-illustration">
         <a href="{% url 'topopartner:view_track' tid=track.id %}">
-            <div class="still-map video-responsive" id="still-map-{{ track.id }}" data="{% for pt in track.iter_trackpoints %}{{ pt.latitude }},{{ pt.longitude }};{% endfor %}"></div>
+            <div class="still-map video-responsive" id="still-map-{{ track.id }}" route="{% url 'topopartner:get_trackpoints' tid=track.id %}" }}"></div>
         </a>
     </div>
     <div class="card-header">

@@ -73,7 +73,6 @@
                 {% if request.user == track.user %}
                 <p>
                     <a class="btn btn-primary" href="{% url 'topopartner:edit_track' tid=track.id %}">Edit</a>
-                    <a class="btn btn-primary" href="{% url 'topopartner:fetch_elevation_data' tid=track.id %}">Fetch elevation</a>
                 </p>
                 {% endif %}
             </div>
