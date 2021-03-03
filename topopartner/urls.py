@@ -15,6 +15,7 @@ urlpatterns = [
     path("track/<tid>/edit", views.edit_track, name="edit_track"),
     path("track/<tid>/elevation", views.fetch_elevation_data, name="fetch_elevation_data"),
     path("track/<tid>/trackpoints", views.get_trackpoints, name="get_trackpoints"),
+    path("track/<tid>/create-smooth", views.create_smooth_track, name="create_smooth_track"),
     path("upload", views.upload_track, name="upload_track"),
     path("fit", views.fit_linreg, name="fit_linreg"),
     path("chaine-des-puys", views.chaine_des_puys, name="chaine_des_puys"),

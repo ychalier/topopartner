@@ -199,3 +199,68 @@ def latlng_to_xy(lat, lng):
         (y - scaler["min_y"]) / (scaler["max_y"] - scaler["min_y"])\
             * scaler["target"] / scaler["aspect"],
     )
+
+
+def smooth(track, threshold):
+    smoothed = [track[0]]
+    for point in track:
+        if distance(smoothed[-1].latitude, smoothed[-1].longitude, point.latitude, point.longitude) > threshold:
+            smoothed.append(point)
+    return smoothed
+
+
+def gap(pt, pt_left, pt_right):
+    x = numpy.array((pt_left.latitude, pt_left.longitude))
+    y = numpy.array((pt.latitude, pt.longitude))
+    z = numpy.array((pt_right.latitude, pt_right.longitude))
+    u = y - x
+    v = z - x
+    proj = (numpy.dot(u, v) / numpy.sqrt(v.dot(v)) ** 2) * v
+    return numpy.sqrt(proj.dot(proj))
+
+
+def simplify(track, target):
+    simplified = track[:]
+    gaps = []
+    for i, point in enumerate(simplified[:-1]):
+        if i == 0:
+            continue
+        gaps.append(gap(point, simplified[i - 1], simplified[i + 1]))
+    while len(simplified) > target:
+        i = numpy.argmin(gaps)
+        simplified.pop(i + 1)
+        gaps.pop(i)
+        if i > 0:
+            gaps[i - 1] = gap(simplified[i], simplified[i - 1], simplified[i + 1])
+        if i + 1 < len(gaps):
+            gaps[i] = gap(simplified[i + 1], simplified[i], simplified[i + 2])
+    return simplified
+    
+
+def clean(track, smoothing_threshold, simplification_target_proportion):
+    """Smooth and simplify a track. More at
+    https://www.gpsvisualizer.com/tutorials/track_filters.html
+    
+    Parameters
+    ==========
+    
+        track: list[gpxpy.gpx.GPXTrackPoint]
+            The list of points defining the track to clean.
+            
+        smoothing_threshold: float
+            Only keep the points that are at least at this
+            distance from their predecessor.
+            
+        simplification_target: float
+            Proportion of points for the output track.
+            
+    Return
+    ======
+        list[gpxpy.gpx.GPXTrackPoint]
+        The clean version of the input track.
+        
+    """
+    return simplify(
+        smooth(track, smoothing_threshold),
+        simplification_target_proportion * len(track)
+    )

@@ -157,6 +157,38 @@ def fetch_elevation_data(request, tid):
     return redirect("topopartner:view_track", tid=track.id)
 
 
+@require_app_access("topopartner")
+def create_smooth_track(request, tid):
+    """Fetch the elevation data of a track and compute its stats afterwards.
+    """
+    if request.method == "POST":
+        track = get_track_from_tid(tid, required_user=request.user)
+        points = utils.clean(
+            list(track.iter_trackpoints()),
+            float(request.POST.get("smoothing", 8)),
+            float(request.POST.get("simplification", .6))
+        )
+        gpx = gpxpy.gpx.GPX()
+        trk = gpxpy.gpx.GPXTrack()
+        gpx.tracks.append(trk)
+        trkseg = gpxpy.gpx.GPXTrackSegment()
+        trk.segments.append(trkseg)
+        for point in points:
+            trkseg.points.append(point)
+        smooth_track = models.Track.objects.create(
+            user=request.user,
+            label="[SMOOTH] " + track.label,
+            comment=track.comment,
+            gpx=gpx.to_xml(),
+            is_itinerary=track.is_itinerary,
+            is_recording=track.is_recording,
+            date_visited=track.date_visited,
+        )
+        utils.compute_stats(smooth_track, save_values=True)
+        return redirect("topopartner:view_track", tid=smooth_track.id)
+    return redirect("topopartner:view_track", tid=tid)
+
+
 def download_gpx(request, tid):
     """Return the GPX of a track as an attachment.
     """

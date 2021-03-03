@@ -24,9 +24,12 @@
     <div class="column col-4 col-sm-12">
 
         <div>
-            <a class="btn btn-primary" href="{% url 'topopartner:fetch_elevation_data' tid=track.id %}">Fetch elevation</a>
-            <button id="buttonClearTrack" class="btn btn-primary" type="button" name="button">Clear track</button>
-            <a class="btn btn-primary" href="{% url 'topopartner:delete_track' tid=track.id %}">Delete track</a>
+            {% if track.is_itinerary %}
+                <button class="btn btn-primary btn-sm" id="buttonClearTrack" type="button" name="button" title="Erase the track from the map">Clear</button>
+            {% endif %}
+            <a class="btn btn-primary btn-sm" href="{% url 'topopartner:delete_track' tid=track.id %}" title="Completely remove this track">Delete</a>
+            <a class="btn btn-primary btn-sm" href="{% url 'topopartner:fetch_elevation_data' tid=track.id %}" title="Fetch and replace elevation data for this track">Fetch elevation</a>
+            <button class="btn btn-primary btn-sm" onclick="showModal('modal-smooth-track')" title="Create a smooth version of this track">Smooth</button>
         </div>
 
         <div id="track_form">
@@ -54,8 +57,40 @@
         </div>
     </div>
 
+    <div class="modal" id="modal-smooth-track">
+        <span class="modal-overlay" aria-label="Close" onclick="closeModal('modal-smooth-track')"></span>
+        <div class="modal-container">
+            <form method="post" action="{% url 'topopartner:create_smooth_track' tid=track.id %}">
+                {% csrf_token %}
+                <div class="modal-header">
+                    <span onclick="closeModal('modal-smooth-track')" class="btn btn-clear float-right" aria-label="Close"></span>
+                    <div class="modal-title h5">Smooth track</div>
+                </div>
+                <div class="modal-body">
+                    <div class="content">
+                        <div class="form-group">
+                            <label class="form-label" for="input-smoothing">Smoothing</label>
+                            <input class="form-input" id="input-smoothing" name="smoothing" type="number" value="8" step="0.01" />
+                            <p class="form-input-hint">Only keep the points that are at least at this distance (in meters) from their predecessor.</p>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="input-simplification">Simplification</label>
+                            <input class="form-input" id="input-simplification" name="simplification" type="number" value="0.6" step="0.01" />
+                            <p class="form-input-hint">Proportion of points to keep in the created track.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-primary">Create a smooth track</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script type="text/javascript">
+        {% if track.is_itinerary %}
         mapWrapper.bindButtonClearTrack("buttonClearTrack");
+        {% endif %}
         mapWrapper.bindButtonSaveTrack("buttonSaveTrack");
         mapWrapper.bindTrackForm("track_form");
         document.querySelector("#track_form input[name='label']").value = "{{ track.label | safe }}";
