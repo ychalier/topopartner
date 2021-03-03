@@ -105,8 +105,14 @@ class LinRegModel(models.Model):
     coef_distance = models.FloatField(default=0)
     coef_uphill = models.FloatField(default=0)
 
+    def __str__(self):
+        return "ApiKey<%s>" % (self.user.username)
+
 
 class ApiKey(models.Model):
 
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     key = models.CharField(max_length=32)
+
+    def __str__(self):
+        return "ApiKey<%s>" % (self.user.username)

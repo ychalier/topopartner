@@ -83,10 +83,14 @@ def view_tracks(request):
         .filter(is_recording=True, user=request.user)\
         .order_by("-date_visited")
     linreg, _ = models.LinRegModel.objects.get_or_create(user=request.user)
+    api_key = None
+    if hasattr(request.user, "apikey"):
+        api_key = request.user.apikey
     return render(request, "topopartner/tracks.html", {
         "itineraries": itineraries,
         "recordings": recordings,
-        "linreg": linreg
+        "linreg": linreg,
+        "api_key": api_key,
     })
 
 
