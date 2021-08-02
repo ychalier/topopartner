@@ -1,4 +1,15 @@
-body {
+body.noise {
     background-image: url("../img/pattern8.jpg") !important;
     background-repeat: repeat;
+}
+
+.navbar {
+    background: #101010;
+    padding: .4rem .8rem;
+    margin: .8rem 0;
+}
+
+.tab-item.tab-action a.btn.btn-sm {
+    color: var(--color-primary-1);
+    line-height: .75em;
 }
