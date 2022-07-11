@@ -30,7 +30,7 @@ def get_track_from_tid(tid, required_user=None, allow_public=False):
     return track
 
 
-@permission_required("topopartner.can_view_waypoint")
+@permission_required("topopartner.view_waypoint")
 def waypoints(request):
     """View of the waypoints in the database.
     """
@@ -43,7 +43,7 @@ def waypoints(request):
     })
 
 
-@permission_required("topopartner.can_add_waypoint")
+@permission_required("topopartner.add_waypoint")
 def create_or_update_waypoint(request):
     """Parse the POST body content (expecting a JSON) to update the waypoints
     in the database.
@@ -71,7 +71,7 @@ def create_or_update_waypoint(request):
         waypoint.save()
     return HttpResponse(reverse("topopartner:waypoints"), content_type="text/plain")
 
-@permission_required("topopartner.can_view_track")
+@permission_required("topopartner.view_track")
 def view_tracks(request):
     """Summary of the existing tracks.
     """
@@ -93,7 +93,7 @@ def view_tracks(request):
     })
 
 
-@permission_required("topopartner.can_view_track")
+@permission_required("topopartner.view_track")
 def tracks_itineraries(request):
     """Summary of the existing tracks.
     """
@@ -105,7 +105,7 @@ def tracks_itineraries(request):
     })
 
 
-@permission_required("topopartner.can_view_track")
+@permission_required("topopartner.view_track")
 def tracks_recordings(request):
     """Summary of the existing tracks.
     """
@@ -135,14 +135,14 @@ def view_track(request, tid):
     })
 
 
-@permission_required("topopartner.can_view_track")
+@permission_required("topopartner.view_track")
 def get_trackpoints(request, tid):
     track = get_track_from_tid(tid, required_user=request.user)
     data = [[trkpt.latitude, trkpt.longitude] for trkpt in track.iter_trackpoints()]
     return HttpResponse(json.dumps(data), content_type="application/json")
 
 
-@permission_required("topopartner.can_change_track")
+@permission_required("topopartner.change_track")
 def fetch_elevation_data(request, tid):
     """Fetch the elevation data of a track and compute its stats afterwards.
     """
@@ -156,7 +156,7 @@ def fetch_elevation_data(request, tid):
     return redirect("topopartner:view_track", tid=track.id)
 
 
-@permission_required("topopartner.can_change_track")
+@permission_required("topopartner.change_track")
 def create_smooth_track(request, tid):
     """Fetch the elevation data of a track and compute its stats afterwards.
     """
@@ -198,7 +198,7 @@ def download_gpx(request, tid):
     return response
 
 
-@permission_required("topopartner.can_add_track")
+@permission_required("topopartner.add_track")
 def create_or_update_track(request, tid=None):
     """Parse the POST body content (expecting a JSON) to update the tracks
     in the database.
@@ -226,7 +226,7 @@ def create_or_update_track(request, tid=None):
     )
 
 
-@permission_required("topopartner.can_change_track")
+@permission_required("topopartner.change_track")
 def edit_track(request, tid):
     """Edit a track.
     """
@@ -245,7 +245,7 @@ def edit_track(request, tid):
     })
 
 
-@permission_required("topopartner.can_add_track")
+@permission_required("topopartner.add_track")
 def create_track(request):
     """Create a track.
     """
@@ -258,7 +258,7 @@ def create_track(request):
     })
 
 
-@permission_required("topopartner.can_delete_track")
+@permission_required("topopartner.delete_track")
 def delete_track(request, tid):
     """Delete a track.
     """
@@ -270,7 +270,7 @@ def delete_track(request, tid):
     return redirect("topopartner:recordings")
 
 
-@permission_required("topopartner.can_add_track")
+@permission_required("topopartner.add_track")
 def upload_track(request):
     """Upload a GPX.
     """
@@ -296,7 +296,7 @@ def upload_track(request):
     return redirect("topopartner:view_track", tid=track.id)
 
 
-@permission_required("topopartner.can_change_linregmodel")
+@permission_required("topopartner.change_linregmodel")
 def fit_linreg(request):
     """Fit the linear regression model.
     """
