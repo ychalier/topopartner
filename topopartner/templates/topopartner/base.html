@@ -1,4 +1,4 @@
-{% extends 'piweb/single_column.html' %}
+{% extends 'topopartner/single_column.html' %}
 
 {% load static %}
 
@@ -25,9 +25,6 @@
     <a href="{% url 'topopartner:home' %}" class="navbar-brand mr-2">Topopartner</a>
     <a href="{% url 'topopartner:waypoints' %}" class="btn btn-{% if request.get_full_path == waypoints_url %}primary{% else %}link{% endif %}">Waypoints</a>
     <a href="{% url 'topopartner:tracks' %}" class="btn btn-{% if request.get_full_path == tracks_url %}primary{% else %}link{% endif %}">Tracks</a>
-</section>
-<section class="navbar-section">
-    {% include 'piweb/user_icon.html' %}
 </section>
 {% endblock navbar %}
 

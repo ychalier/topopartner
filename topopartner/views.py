@@ -5,11 +5,10 @@ from django.http import HttpResponse
 from django.urls import reverse
 from django.http import Http404
 from django.template.defaultfilters import slugify
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import permission_required
 from django.views.decorators.csrf import csrf_exempt
 from django.core.exceptions import PermissionDenied
 from django.core.exceptions import SuspiciousOperation
-from piweb.decorators import require_app_access
 import dateutil.parser
 import gpxpy.gpx
 from . import models
@@ -31,7 +30,7 @@ def get_track_from_tid(tid, required_user=None, allow_public=False):
     return track
 
 
-@require_app_access("topopartner")
+@permission_required("topopartner.can_view_waypoint")
 def waypoints(request):
     """View of the waypoints in the database.
     """
@@ -44,7 +43,7 @@ def waypoints(request):
     })
 
 
-@require_app_access("topopartner")
+@permission_required("topopartner.can_add_waypoint")
 def create_or_update_waypoint(request):
     """Parse the POST body content (expecting a JSON) to update the waypoints
     in the database.
@@ -72,7 +71,7 @@ def create_or_update_waypoint(request):
         waypoint.save()
     return HttpResponse(reverse("topopartner:waypoints"), content_type="text/plain")
 
-@require_app_access("topopartner")
+@permission_required("topopartner.can_view_track")
 def view_tracks(request):
     """Summary of the existing tracks.
     """
@@ -94,7 +93,7 @@ def view_tracks(request):
     })
 
 
-@require_app_access("topopartner")
+@permission_required("topopartner.can_view_track")
 def tracks_itineraries(request):
     """Summary of the existing tracks.
     """
@@ -106,7 +105,7 @@ def tracks_itineraries(request):
     })
 
 
-@require_app_access("topopartner")
+@permission_required("topopartner.can_view_track")
 def tracks_recordings(request):
     """Summary of the existing tracks.
     """
@@ -136,14 +135,14 @@ def view_track(request, tid):
     })
 
 
-@require_app_access("topopartner")
+@permission_required("topopartner.can_view_track")
 def get_trackpoints(request, tid):
     track = get_track_from_tid(tid, required_user=request.user)
     data = [[trkpt.latitude, trkpt.longitude] for trkpt in track.iter_trackpoints()]
     return HttpResponse(json.dumps(data), content_type="application/json")
 
 
-@require_app_access("topopartner")
+@permission_required("topopartner.can_change_track")
 def fetch_elevation_data(request, tid):
     """Fetch the elevation data of a track and compute its stats afterwards.
     """
@@ -157,7 +156,7 @@ def fetch_elevation_data(request, tid):
     return redirect("topopartner:view_track", tid=track.id)
 
 
-@require_app_access("topopartner")
+@permission_required("topopartner.can_change_track")
 def create_smooth_track(request, tid):
     """Fetch the elevation data of a track and compute its stats afterwards.
     """
@@ -199,7 +198,7 @@ def download_gpx(request, tid):
     return response
 
 
-@require_app_access("topopartner")
+@permission_required("topopartner.can_add_track")
 def create_or_update_track(request, tid=None):
     """Parse the POST body content (expecting a JSON) to update the tracks
     in the database.
@@ -227,7 +226,7 @@ def create_or_update_track(request, tid=None):
     )
 
 
-@require_app_access("topopartner")
+@permission_required("topopartner.can_change_track")
 def edit_track(request, tid):
     """Edit a track.
     """
@@ -246,7 +245,7 @@ def edit_track(request, tid):
     })
 
 
-@require_app_access("topopartner")
+@permission_required("topopartner.can_add_track")
 def create_track(request):
     """Create a track.
     """
@@ -259,7 +258,7 @@ def create_track(request):
     })
 
 
-@require_app_access("topopartner")
+@permission_required("topopartner.can_delete_track")
 def delete_track(request, tid):
     """Delete a track.
     """
@@ -271,7 +270,7 @@ def delete_track(request, tid):
     return redirect("topopartner:recordings")
 
 
-@require_app_access("topopartner")
+@permission_required("topopartner.can_add_track")
 def upload_track(request):
     """Upload a GPX.
     """
@@ -297,7 +296,7 @@ def upload_track(request):
     return redirect("topopartner:view_track", tid=track.id)
 
 
-@require_app_access("topopartner")
+@permission_required("topopartner.can_change_linregmodel")
 def fit_linreg(request):
     """Fit the linear regression model.
     """
@@ -311,32 +310,6 @@ def fit_linreg(request):
         for track in models.Track.objects.filter(is_itinerary=True, user=request.user):
             track.predict_duration(linreg)
     return redirect("topopartner:recordings")
-
-
-def chaine_des_puys(request):
-    """Dynamic view for https://github.com/ychalier/chaine-des-puys
-    """
-    visit_current = 0
-    visit_total = 0
-    visit_percent = 0
-    waypoints_ = list()
-    if models.WaypointCategory.objects.filter(name="Chaîne des Puys").exists():
-        category = models.WaypointCategory.objects.get(name="Chaîne des Puys")
-        waypoints_ = models.Waypoint.objects.filter(category=category).order_by("-latitude")
-        for waypoint in waypoints_:
-            x, y = utils.latlng_to_xy(waypoint.latitude, waypoint.longitude)
-            waypoint.x = x
-            waypoint.y = y
-            visit_total += 1
-            if waypoint.visited:
-                visit_current += 1
-        visit_percent = 100. * visit_current / visit_total
-    return render(request, "topopartner/chaine_des_puys.html", {
-        "waypoints": waypoints_,
-        "visit_current": visit_current,
-        "visit_total": visit_total,
-        "visit_percent": visit_percent,
-    })
 
 
 def check_api_key(request):

@@ -9,23 +9,21 @@ os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 
 setup(
     name='django-topopartner',
-    version='1.3.1',
+    version='1.4.0',
     packages=find_packages(),
     include_package_data=True,
     description='A Django app for topographic data management.',
     long_description=README,
-    url='https://yohan.chalier.fr/',
+    url='https://chalier.fr/topopartner',
     author='Yohan Chalier',
     author_email='yohan@chalier.fr',
     classifiers=[
         'Environment :: Web Environment',
         'Framework :: Django',
-        'Framework :: Django :: 3.1.5',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: MIT License',
         'Operating System :: OS Independent',
         'Programming Language :: Python',
-        'Programming Language :: Python :: 3.7',
         'Topic :: Internet :: WWW/HTTP',
         'Topic :: Internet :: WWW/HTTP :: Dynamic Content',
     ],
@@ -35,6 +33,5 @@ setup(
         "django-mathfilters",
         "gpxpy",
         "numpy",
-        "sklearn"
     ],
 )
