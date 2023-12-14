@@ -1,9 +1,9 @@
 {% load mathfilters %}
 
-<div class="card my-2 {% if track.is_itinerary %}{% else %}{% endif %}">
+<div class="card my-2 {% if track.is_route %}{% else %}{% endif %}">
     <div class="card-illustration">
         <a href="{% url 'topopartner:view_track' tid=track.id %}">
-            <div class="still-map video-responsive" id="still-map-{{ track.id }}" route="{% url 'topopartner:track_points' tid=track.id %}"></div>
+            <div class="still-map video-responsive" id="still-map-{{ track.id }}" href="{% url 'topopartner:track_points' tid=track.id %}"></div>
         </a>
     </div>
     <div class="card-header">

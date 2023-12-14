@@ -2,7 +2,7 @@
 {% load mathfilters %}
 {% load static %}
 
-{% block title %}Itineraries &mid; {{ block.super }}{% endblock title %}
+{% block title %}Routes &mid; {{ block.super }}{% endblock title %}
 
 {% block head %}
 {{ block.super }}
@@ -11,7 +11,7 @@
 
 {% block main_content %}
 
-{% if itineraries %}
+{% if routes %}
 
 <div class="tab-container">
 
@@ -20,14 +20,14 @@
         <li class="tab-item"><a for="tab-table">Table</a></li>
         <li class="tab-item tab-action">
             <div class="input-group input-inline">
-                <a class="btn btn-primary btn-sm input-group-btn" href="{% url 'topopartner:create_track' %}" title="Create an itinerary">Create</a>
+                <a class="btn btn-primary btn-sm input-group-btn" href="{% url 'topopartner:create_track' %}" title="Create a route">Create</a>
             </div>
         </li>
     </ul>
 
     <div class="tab-content" id="tab-grid" style="overflow-x: hidden">
         <div class="columns">
-            {% for track in itineraries %}
+            {% for track in routes %}
             <div class="column col-6 col-sm-12">
                 {% include 'topopartner/partials/map_card.html' %}
             </div>
@@ -46,7 +46,7 @@
                 <th>Creation</th>
                 <th>Public</th>
             </tr>
-            {% for track in itineraries %}
+            {% for track in routes %}
             <tr>
                 <td class="highlight"><a class="transparent" href="{% url 'topopartner:view_track' tid=track.id%}">{{ track.label }}</a></td>
                 <td>{% if track.distance %}{{ track.distance | mul:.001 | floatformat }}km{% else %}&mdash;{% endif %}</td>
@@ -68,9 +68,9 @@
         <i class="icon icon-4x icon-route"></i>
     </div>
     <p class="empty-title h5">Empty</p>
-    <p class="empty-subtitle">Click the button below to create your first itinerary.</p>
+    <p class="empty-subtitle">Click the button below to create your first route.</p>
     <div class="empty-action">
-        <a class="btn btn-primary" href="{% url 'topopartner:create_track' %}">Create itinerary</a>
+        <a class="btn btn-primary" href="{% url 'topopartner:create_track' %}">Create route</a>
     </div>
 </div>
 {% endif %}

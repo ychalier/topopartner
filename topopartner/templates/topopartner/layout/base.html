@@ -34,7 +34,7 @@
                     {% block navbar %}
                     <section class="navbar-section">
                         <a href="{% url 'topopartner:landing' %}" class="navbar-brand mr-2">Topopartner</a>
-                        <a href="{% url 'topopartner:itineraries' %}" class="btn btn-{% if active == 'itineraries' %}primary{% else %}link{% endif %}">Itineraries</a>
+                        <a href="{% url 'topopartner:routes' %}" class="btn btn-{% if active == 'routes' %}primary{% else %}link{% endif %}">Routes</a>
                         <a href="{% url 'topopartner:recordings' %}" class="btn btn-{% if active == 'recordings' %}primary{% else %}link{% endif %}">Recordings</a>
                     </section>
                     {% endblock navbar %}

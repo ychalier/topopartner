@@ -343,8 +343,8 @@ class Track {
             .querySelector("textarea[name='comment']").value;
         let is_public = this.map.externalElements.trackForm
             .querySelector("input[name='public']").checked;
-        let is_itinerary = this.map.externalElements.trackForm
-            .querySelector("input[name='itinerary']").checked;
+        let is_route = this.map.externalElements.trackForm
+            .querySelector("input[name='route']").checked;
         if (label) {
             let latlngs = [];
             if (this.edited) {
@@ -359,7 +359,7 @@ class Track {
                 label: label,
                 comment: comment,
                 is_public: is_public,
-                is_itinerary: is_itinerary,
+                is_route: is_route,
                 latlngs: latlngs,
                 edited: this.edited
             });
@@ -603,9 +603,9 @@ class Waypoint {
 
 window.addEventListener("load", () => {
     document.querySelectorAll(".still-map").forEach((item) => {
-        let route = item.getAttribute("route");
+        let href = item.getAttribute("href");
         let request = new XMLHttpRequest();
-        request.open("GET", route, true);
+        request.open("GET", href, true);
         request.onreadystatechange = function() {
             if (this.readyState === XMLHttpRequest.DONE && this.status === 200) {
                 let elementId = item.getAttribute("id");

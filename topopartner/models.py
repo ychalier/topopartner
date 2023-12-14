@@ -16,7 +16,7 @@ class Track(models.Model):
     date_modified = models.DateTimeField(auto_now=True, auto_now_add=False)
     date_visited = models.DateField(blank=True, null=True)
     is_recording = models.BooleanField(default=False)
-    is_itinerary = models.BooleanField(default=False)
+    is_route = models.BooleanField(default=False)
     distance = models.FloatField(blank=True, null=True)
     uphill = models.FloatField(blank=True, null=True)
     downhill = models.FloatField(blank=True, null=True)
@@ -27,8 +27,8 @@ class Track(models.Model):
     def __str__(self):
         if self.is_recording:
             return "[Recording] " + self.label
-        if self.is_itinerary:
-            return "[Itinerary] " + self.label
+        if self.is_route:
+            return "[Route] " + self.label
         return self.label
 
     def parsed(self):

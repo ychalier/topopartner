@@ -21,7 +21,7 @@
     <div class="column col-4 col-sm-12">
 
         <div>
-            {% if track.is_itinerary %}
+            {% if track.is_route %}
                 <button class="btn btn-primary btn-sm" id="buttonClearTrack" type="button" name="button" title="Erase the track from the map">Clear</button>
             {% endif %}
             <a class="btn btn-primary btn-sm" href="{% url 'topopartner:delete_track' tid=track.id %}" title="Completely remove this track">Delete</a>
@@ -46,8 +46,8 @@
             </div>
             <div class="form-group">
                 <label class="form-switch">
-                    <input id="input_itinerary" type="checkbox" name="itinerary" {% if track.is_itinerary %}checked{% endif %} />
-                    <i class="form-icon"></i> Make the track an itinerary
+                    <input id="input_route" type="checkbox" name="route" {% if track.is_route %}checked{% endif %} />
+                    <i class="form-icon"></i> Make the track a route
                 </label>
             </div>
             <button id="buttonSaveTrack" class="btn btn-primary" type="button" name="button">Save</button>
@@ -85,7 +85,7 @@
     </div>
 
     <script type="text/javascript">
-        {% if track.is_itinerary %}
+        {% if track.is_route %}
         mapWrapper.bindButtonClearTrack("buttonClearTrack");
         {% endif %}
         mapWrapper.bindButtonSaveTrack("buttonSaveTrack");

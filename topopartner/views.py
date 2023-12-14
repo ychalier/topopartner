@@ -45,11 +45,11 @@ def create_or_update_track(request, tid=None):
     track.label = data["label"]
     track.comment = data["comment"]
     track.public = data["is_public"]
-    if data["is_itinerary"]:
-        track.is_itinerary = True
+    if data["is_route"]:
+        track.is_route = True
         track.is_recording = False
     else:
-        track.is_itinerary = False
+        track.is_route = False
         track.is_recording = True
     track.save()
     return HttpResponse(
@@ -79,16 +79,16 @@ def view_about(request):
 
 
 @permission_required("topopartner.view_track")
-def view_itineraries(request):
+def view_routes(request):
     """Summary of the existing tracks.
     """
-    itineraries = models.Track.objects\
-        .filter(is_itinerary=True, user=request.user)\
+    routes = models.Track.objects\
+        .filter(is_route=True, user=request.user)\
         .order_by("-date_added")
-    return render(request, "topopartner/itineraries.html", {
-        "itineraries": itineraries,
+    return render(request, "topopartner/routes.html", {
+        "routes": routes,
         "api_key": getattr(request.user, "apikey", None),
-        "active": "itineraries"
+        "active": "routes"
     })
 
 
@@ -131,14 +131,14 @@ def view_upload_track(request):
         return HttpResponse("No label found.", content_type="text/plain")
     if "gpx" not in request.FILES:
         return HttpResponse("No GPX uploaded.", content_type="text/plain")
-    is_itinerary = "itinerary" in request.POST
-    is_recording = not is_itinerary
+    is_route = "route" in request.POST
+    is_recording = not is_route
     track = models.Track.objects.create(
         user=request.user,
         label=request.POST["label"],
         comment=request.POST.get("comment"),
         gpx=request.FILES["gpx"].read().decode(),
-        is_itinerary=is_itinerary,
+        is_route=is_route,
         is_recording=is_recording,
         date_visited=request.POST.get("visited"),
     )
@@ -160,7 +160,7 @@ def view_track(request, tid):
         "track": track,
         "mapdata": mapdata,
         "elevation_data": elevation_data,
-        "active": "itineraries" if track.is_itinerary else "recordings"
+        "active": "routes" if track.is_route else "recordings"
     })
 
 
@@ -172,7 +172,7 @@ def view_edit_track(request, tid):
         return create_or_update_track(request, tid)
     track = get_track_from_tid(tid, required_user=request.user)
     mapdata = utils.gather_map_data(request)
-    if track.is_itinerary:
+    if track.is_route:
         mapdata["edit"] = "polyline"
     mapdata["track"] = list()
     for track_point in track.iter_trackpoints():
@@ -220,7 +220,7 @@ def view_smooth_track(request, tid):
             label="[SMOOTH] " + track.label,
             comment=track.comment,
             gpx=gpx.to_xml(),
-            is_itinerary=track.is_itinerary,
+            is_route=track.is_route,
             is_recording=track.is_recording,
             date_visited=track.date_visited,
         )
@@ -244,10 +244,10 @@ def view_delete_track(request, tid):
     """Delete a track.
     """
     track = get_track_from_tid(tid, required_user=request.user)
-    is_itinerary = track.is_itinerary
+    is_route = track.is_route
     track.delete()
-    if is_itinerary:
-        return redirect("topopartner:itineraries")
+    if is_route:
+        return redirect("topopartner:routes")
     return redirect("topopartner:recordings")
 
 
@@ -269,7 +269,7 @@ def view_fit(request):
         linreg.coef_uphill = reg[1]
         linreg.intercept = reg[2]
         linreg.save()
-        for track in models.Track.objects.filter(is_itinerary=True, user=request.user):
+        for track in models.Track.objects.filter(is_route=True, user=request.user):
             track.predict_duration(linreg)
     return redirect("topopartner:recordings")
 
@@ -279,26 +279,26 @@ def view_fit(request):
 # ----------------------------------------------- #
 
 
-def api_list_itineraries(request):
+def api_list_routes(request):
     user = check_api_key(request)
-    itineraries = models.Track.objects\
-        .filter(is_itinerary=True, user=user)\
+    routes = models.Track.objects\
+        .filter(is_route=True, user=user)\
         .order_by("-date_added")
-    data = {"itineraries": []}
-    for itinerary in itineraries:
-        data["itineraries"].append({
-            "label": itinerary.label,
-            "tid": itinerary.id,
-            "date_added": itinerary.date_added.isoformat(),
-            "date_modified": itinerary.date_modified.isoformat(),
-            "distance": itinerary.distance,
-            "uphill": itinerary.uphill,
-            "gpx": itinerary.gpx,
+    data = {"routes": []}
+    for route in routes:
+        data["routes"].append({
+            "label": route.label,
+            "tid": route.id,
+            "date_added": route.date_added.isoformat(),
+            "date_modified": route.date_modified.isoformat(),
+            "distance": route.distance,
+            "uphill": route.uphill,
+            "gpx": route.gpx,
         })
     return HttpResponse(json.dumps(data), content_type="application/json")
 
 
-def api_get_itinerary(request):
+def api_get_route(request):
     user = check_api_key(request)
     tid = request.GET.get("tid")
     if models.Track.objects.filter(id=tid, user=user).exists():
@@ -336,7 +336,7 @@ def api_post_recording(request):
         label=data["label"],
         comment=data["comment"],
         gpx=data["gpx"],
-        is_itinerary=False,
+        is_route=False,
         is_recording=True,
         date_visited=datetime.datetime.fromisoformat(data["date_visited"]).date(),
     )
