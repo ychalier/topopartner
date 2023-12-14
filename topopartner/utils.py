@@ -1,7 +1,6 @@
 """General utilities for the topopartner module.
 """
 
-# pylint: disable=E0401,E1101
 import io
 import re
 import math
@@ -19,36 +18,16 @@ def gather_map_data(request):
     """Gather basic data for the creation of the Leafleat map. Plots the map
     with the waypoints from the database, with bounds to fit them.
     """
-    data = {
-        "waypoints": list(),
-        "categories": models.WaypointCategory.objects.filter(user=request.user)
-    }
-    count, lats, lngs = 0, list(), list()
-    for waypoint in models.Waypoint.objects.filter(user=request.user):
-        count += 1
-        data["waypoints"].append(waypoint)
-        lats.append(waypoint.latitude)
-        lngs.append(waypoint.longitude)
-    if count == 0:
-        data["center"] = {"lat": 48.867, "lng": 2.3265}
-        data["bounds"] = {
+    return {
+        "center": {"lat": 48.867, "lng": 2.3265},
+        "bounds": {
             "sw": [43.3911, -1.658611111],
             "ne": [49.1203, 6.1778],
         }
-        return data
-    data["center"] = {
-        "lat": sum(lats) / count,
-        "lng": sum(lngs) / count
     }
-    data["bounds"] = {
-        "sw": [min(lats), min(lngs)],
-        "ne": [max(lats), max(lngs)]
-    }
-    return data
 
 
 def distance(lat1, lon1, lat2, lon2):
-    # pylint: disable=C0103
     """Compute the distance in meters between two points.
     """
     r = 6371000
@@ -174,7 +153,6 @@ def linear_regression(tracks):
 
 
 def latlng_to_xy(lat, lng):
-    # pylint: disable=C0103
     """Node constructor from latitude and longitude (in degrees) using a
     Mercator's projection approximation. This is hardcoded from
     https://github.com/ychalier/chaine-des-puys

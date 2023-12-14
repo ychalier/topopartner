@@ -1,4 +1,4 @@
-{% extends 'topopartner/base.html' %}
+{% extends 'topopartner/layout/base.html' %}
 {% load static %}
 
 {% block title %}Create track &mid; {{ block.super }}{% endblock title %}
@@ -13,7 +13,7 @@
 <div class="columns">
 
     <div class="column col-8 col-sm-12">
-        {% include 'topopartner/map.html' %}
+        {% include 'topopartner/partials/map.html' %}
     </div>
 
     <div class="column col-4 col-sm-12">

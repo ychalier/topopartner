@@ -1,4 +1,4 @@
-{% extends 'topopartner/base.html' %}
+{% extends 'topopartner/layout/base.html' %}
 {% load static %}
 
 {% block title %}Edit track &mid; {{ block.super }}{% endblock title %}
@@ -10,15 +10,12 @@
 
 {% block main_content %}
 
-<div class="h1">
-    <a href="{% url 'topopartner:tracks' %}">{% if track.is_itinerary %}Itineraries{% else %}Recordings{% endif %} &#10093;</a>
-    <a href="{% url 'topopartner:view_track' tid=track.id %}">{{ track.label }}</a>
-</div>
+<h1>{{ track.label }}</h1>
 
 <div class="columns">
 
     <div class="column col-8 col-sm-12">
-        {% include 'topopartner/map.html' %}
+        {% include 'topopartner/partials/map.html' %}
     </div>
 
     <div class="column col-4 col-sm-12">
@@ -28,7 +25,7 @@
                 <button class="btn btn-primary btn-sm" id="buttonClearTrack" type="button" name="button" title="Erase the track from the map">Clear</button>
             {% endif %}
             <a class="btn btn-primary btn-sm" href="{% url 'topopartner:delete_track' tid=track.id %}" title="Completely remove this track">Delete</a>
-            <a class="btn btn-primary btn-sm" href="{% url 'topopartner:fetch_elevation_data' tid=track.id %}" title="Fetch and replace elevation data for this track">Fetch elevation</a>
+            <a class="btn btn-primary btn-sm" href="{% url 'topopartner:elevate_track' tid=track.id %}" title="Fetch and replace elevation data for this track">Fetch elevation</a>
             <button class="btn btn-primary btn-sm" onclick="showModal('modal-smooth-track')" title="Create a smooth version of this track">Smooth</button>
         </div>
 
@@ -60,7 +57,7 @@
     <div class="modal" id="modal-smooth-track">
         <span class="modal-overlay" aria-label="Close" onclick="closeModal('modal-smooth-track')"></span>
         <div class="modal-container">
-            <form method="post" action="{% url 'topopartner:create_smooth_track' tid=track.id %}">
+            <form method="post" action="{% url 'topopartner:smooth_track' tid=track.id %}">
                 {% csrf_token %}
                 <div class="modal-header">
                     <span onclick="closeModal('modal-smooth-track')" class="btn btn-clear float-right" aria-label="Close"></span>

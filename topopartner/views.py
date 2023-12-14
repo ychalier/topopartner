@@ -1,5 +1,6 @@
-# pylint: disable=C0114,E0401,E0611,E1101,C0103
+import datetime
 import json
+
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from django.urls import reverse
@@ -9,16 +10,15 @@ from django.contrib.auth.decorators import permission_required
 from django.views.decorators.csrf import csrf_exempt
 from django.core.exceptions import PermissionDenied
 from django.core.exceptions import SuspiciousOperation
-import dateutil.parser
 import gpxpy.gpx
+
 from . import models
 from . import utils
 
 
-def home(request):
-    """Purpose is yet to be defined.
-    """
-    return render(request, "topopartner/home.html", {})
+# ----------------------------------------------- #
+# UTILITIES                                       #
+# ----------------------------------------------- #
 
 
 def get_track_from_tid(tid, required_user=None, allow_public=False):
@@ -28,174 +28,6 @@ def get_track_from_tid(tid, required_user=None, allow_public=False):
     if not allow_public and (required_user is not None and track.user != required_user):
         raise PermissionDenied
     return track
-
-
-@permission_required("topopartner.view_waypoint")
-def waypoints(request):
-    """View of the waypoints in the database.
-    """
-    if request.method == "POST":
-        return create_or_update_waypoint(request)
-    data = utils.gather_map_data(request)
-    data["edit"] = "marker"
-    return render(request, "topopartner/waypoints.html", {
-        "mapdata": data,
-    })
-
-
-@permission_required("topopartner.add_waypoint")
-def create_or_update_waypoint(request):
-    """Parse the POST body content (expecting a JSON) to update the waypoints
-    in the database.
-    """
-    for item in json.loads(request.body.decode("utf-8")):
-        if models.Waypoint.objects.filter(id=item["data"]["mid"], user=request.user).exists():
-            waypoint = models.Waypoint.objects.get(id=item["data"]["mid"], user=request.user)
-        else:
-            waypoint = models.Waypoint.objects.create(label="", latitude=0, longitude=0, user=request.user)
-        if item["status"]["delete"]:
-            waypoint.delete()
-            continue
-        waypoint.label = item["data"]["label"]
-        waypoint.latitude = item["data"]["latitude"]
-        waypoint.longitude = item["data"]["longitude"]
-        waypoint.elevation = item["data"]["elevation"]
-        waypoint.comment = item["data"]["comment"]
-        waypoint.visited = item["data"]["visited"]
-        if item["data"]["category"] is not None\
-            and models.WaypointCategory.objects.filter(id=int(item["data"]["category"]), user=request.user).exists():
-            category = models.WaypointCategory.objects.get(id=int(item["data"]["category"]), user=request.user)
-            waypoint.category = category
-        else:
-            waypoint.category = None
-        waypoint.save()
-    return HttpResponse(reverse("topopartner:waypoints"), content_type="text/plain")
-
-@permission_required("topopartner.view_track")
-def view_tracks(request):
-    """Summary of the existing tracks.
-    """
-    itineraries = models.Track.objects\
-        .filter(is_itinerary=True, user=request.user)\
-        .order_by("-date_added")
-    recordings = models.Track.objects\
-        .filter(is_recording=True, user=request.user)\
-        .order_by("-date_visited")
-    linreg, _ = models.LinRegModel.objects.get_or_create(user=request.user)
-    api_key = None
-    if hasattr(request.user, "apikey"):
-        api_key = request.user.apikey
-    return render(request, "topopartner/tracks.html", {
-        "itineraries": itineraries,
-        "recordings": recordings,
-        "linreg": linreg,
-        "api_key": api_key,
-    })
-
-
-@permission_required("topopartner.view_track")
-def tracks_itineraries(request):
-    """Summary of the existing tracks.
-    """
-    itineraries = models.Track.objects\
-        .filter(is_itinerary=True, user=request.user)\
-        .order_by("-date_added")
-    return render(request, "topopartner/tracks_itineraries.html", {
-        "itineraries": itineraries,
-    })
-
-
-@permission_required("topopartner.view_track")
-def tracks_recordings(request):
-    """Summary of the existing tracks.
-    """
-    recordings = models.Track.objects\
-        .filter(is_recording=True, user=request.user)\
-        .order_by("-date_visited")
-    linreg, _ = models.LinRegModel.objects.get_or_create(user=request.user)
-    return render(request, "topopartner/tracks_recordings.html", {
-        "recordings": recordings,
-        "linreg": linreg
-    })
-
-
-def view_track(request, tid):
-    """Simple view for a track.
-    """
-    track = get_track_from_tid(tid, required_user=request.user, allow_public=True)
-    mapdata = utils.gather_map_data(request)
-    mapdata["track"] = list()
-    for trkpt in track.iter_trackpoints():
-        mapdata["track"].append([trkpt.latitude, trkpt.longitude])
-    elevation_data = utils.compute_stats(track)
-    return render(request, "topopartner/track.html", {
-        "track": track,
-        "mapdata": mapdata,
-        "elevation_data": elevation_data,
-    })
-
-
-@permission_required("topopartner.view_track")
-def get_trackpoints(request, tid):
-    track = get_track_from_tid(tid, required_user=request.user)
-    data = [[trkpt.latitude, trkpt.longitude] for trkpt in track.iter_trackpoints()]
-    return HttpResponse(json.dumps(data), content_type="application/json")
-
-
-@permission_required("topopartner.change_track")
-def fetch_elevation_data(request, tid):
-    """Fetch the elevation data of a track and compute its stats afterwards.
-    """
-    track = get_track_from_tid(tid, required_user=request.user)
-    if not utils.fetch_elevation_data(track):
-        return HttpResponse(
-            "Could not fetch elevation data. Contact server admin and check the logs.",
-            content_type="text/plain"
-        )
-    utils.compute_stats(track, save_values=True)
-    return redirect("topopartner:view_track", tid=track.id)
-
-
-@permission_required("topopartner.change_track")
-def create_smooth_track(request, tid):
-    """Fetch the elevation data of a track and compute its stats afterwards.
-    """
-    if request.method == "POST":
-        track = get_track_from_tid(tid, required_user=request.user)
-        points = utils.clean(
-            list(track.iter_trackpoints()),
-            float(request.POST.get("smoothing", 8)),
-            float(request.POST.get("simplification", .6))
-        )
-        gpx = gpxpy.gpx.GPX()
-        trk = gpxpy.gpx.GPXTrack()
-        gpx.tracks.append(trk)
-        trkseg = gpxpy.gpx.GPXTrackSegment()
-        trk.segments.append(trkseg)
-        for point in points:
-            trkseg.points.append(point)
-        smooth_track = models.Track.objects.create(
-            user=request.user,
-            label="[SMOOTH] " + track.label,
-            comment=track.comment,
-            gpx=gpx.to_xml(),
-            is_itinerary=track.is_itinerary,
-            is_recording=track.is_recording,
-            date_visited=track.date_visited,
-        )
-        utils.compute_stats(smooth_track, save_values=True)
-        return redirect("topopartner:view_track", tid=smooth_track.id)
-    return redirect("topopartner:view_track", tid=tid)
-
-
-def download_gpx(request, tid):
-    """Return the GPX of a track as an attachment.
-    """
-    track = get_track_from_tid(tid, required_user=request.user, allow_public=True)
-    response = HttpResponse(track.gpx, content_type="application/gpx+xml")
-    response["Content-Disposition"] =\
-        'attachment; filename="%s.gpx"' % slugify(track.label)
-    return response
 
 
 @permission_required("topopartner.add_track")
@@ -226,27 +58,58 @@ def create_or_update_track(request, tid=None):
     )
 
 
-@permission_required("topopartner.change_track")
-def edit_track(request, tid):
-    """Edit a track.
+def check_api_key(request):
+    key = request.GET.get("k")
+    if models.ApiKey.objects.filter(key=key).exists():
+        return models.ApiKey.objects.get(key=key).user
+    raise PermissionDenied
+
+
+# ----------------------------------------------- #
+# VIEWS                                           #
+# ----------------------------------------------- #
+
+
+def view_landing(request):
+    return redirect("topopartner:about")
+
+
+def view_about(request):
+    return render(request, "topopartner/about.html", {})
+
+
+@permission_required("topopartner.view_track")
+def view_itineraries(request):
+    """Summary of the existing tracks.
     """
-    if request.method == "POST":
-        return create_or_update_track(request, tid)
-    track = get_track_from_tid(tid, required_user=request.user)
-    mapdata = utils.gather_map_data(request)
-    if track.is_itinerary:
-        mapdata["edit"] = "polyline"
-    mapdata["track"] = list()
-    for track_point in track.iter_trackpoints():
-        mapdata["track"].append([track_point.latitude, track_point.longitude])
-    return render(request, "topopartner/edit_track.html", {
-        "track": track,
-        "mapdata": mapdata,
+    itineraries = models.Track.objects\
+        .filter(is_itinerary=True, user=request.user)\
+        .order_by("-date_added")
+    return render(request, "topopartner/itineraries.html", {
+        "itineraries": itineraries,
+        "api_key": getattr(request.user, "apikey", None),
+        "active": "itineraries"
+    })
+
+
+@permission_required("topopartner.view_track")
+def view_recordings(request):
+    """Summary of the existing tracks.
+    """
+    recordings = models.Track.objects\
+        .filter(is_recording=True, user=request.user)\
+        .order_by("-date_visited")
+    linreg, _ = models.LinRegModel.objects.get_or_create(user=request.user)
+    return render(request, "topopartner/recordings.html", {
+        "recordings": recordings,
+        "linreg": linreg,
+        "api_key": getattr(request.user, "apikey", None),
+        "active": "recordings"
     })
 
 
 @permission_required("topopartner.add_track")
-def create_track(request):
+def view_create_track(request):
     """Create a track.
     """
     if request.method == "POST":
@@ -258,20 +121,8 @@ def create_track(request):
     })
 
 
-@permission_required("topopartner.delete_track")
-def delete_track(request, tid):
-    """Delete a track.
-    """
-    track = get_track_from_tid(tid, required_user=request.user)
-    is_itinerary = track.is_itinerary
-    track.delete()
-    if is_itinerary:
-        return redirect("topopartner:itineraries")
-    return redirect("topopartner:recordings")
-
-
 @permission_required("topopartner.add_track")
-def upload_track(request):
+def view_upload_track(request):
     """Upload a GPX.
     """
     if request.method != "POST":
@@ -296,8 +147,119 @@ def upload_track(request):
     return redirect("topopartner:view_track", tid=track.id)
 
 
+def view_track(request, tid):
+    """Simple view for a track.
+    """
+    track = get_track_from_tid(tid, required_user=request.user, allow_public=True)
+    mapdata = utils.gather_map_data(request)
+    mapdata["track"] = list()
+    for trkpt in track.iter_trackpoints():
+        mapdata["track"].append([trkpt.latitude, trkpt.longitude])
+    elevation_data = utils.compute_stats(track)
+    return render(request, "topopartner/track.html", {
+        "track": track,
+        "mapdata": mapdata,
+        "elevation_data": elevation_data,
+        "active": "itineraries" if track.is_itinerary else "recordings"
+    })
+
+
+@permission_required("topopartner.change_track")
+def view_edit_track(request, tid):
+    """Edit a track.
+    """
+    if request.method == "POST":
+        return create_or_update_track(request, tid)
+    track = get_track_from_tid(tid, required_user=request.user)
+    mapdata = utils.gather_map_data(request)
+    if track.is_itinerary:
+        mapdata["edit"] = "polyline"
+    mapdata["track"] = list()
+    for track_point in track.iter_trackpoints():
+        mapdata["track"].append([track_point.latitude, track_point.longitude])
+    return render(request, "topopartner/edit_track.html", {
+        "track": track,
+        "mapdata": mapdata,
+    })
+
+
+@permission_required("topopartner.change_track")
+def view_elevate_track(request, tid):
+    """Fetch the elevation data of a track and compute its stats afterwards.
+    """
+    track = get_track_from_tid(tid, required_user=request.user)
+    if not utils.fetch_elevation_data(track):
+        return HttpResponse(
+            "Could not fetch elevation data. Contact server admin and check the logs.",
+            content_type="text/plain"
+        )
+    utils.compute_stats(track, save_values=True)
+    return redirect("topopartner:view_track", tid=track.id)
+
+
+@permission_required("topopartner.change_track")
+def view_smooth_track(request, tid):
+    """Fetch the elevation data of a track and compute its stats afterwards.
+    """
+    if request.method == "POST":
+        track = get_track_from_tid(tid, required_user=request.user)
+        points = utils.clean(
+            list(track.iter_trackpoints()),
+            float(request.POST.get("smoothing", 8)),
+            float(request.POST.get("simplification", .6))
+        )
+        gpx = gpxpy.gpx.GPX()
+        trk = gpxpy.gpx.GPXTrack()
+        gpx.tracks.append(trk)
+        trkseg = gpxpy.gpx.GPXTrackSegment()
+        trk.segments.append(trkseg)
+        for point in points:
+            trkseg.points.append(point)
+        smooth_track = models.Track.objects.create(
+            user=request.user,
+            label="[SMOOTH] " + track.label,
+            comment=track.comment,
+            gpx=gpx.to_xml(),
+            is_itinerary=track.is_itinerary,
+            is_recording=track.is_recording,
+            date_visited=track.date_visited,
+        )
+        utils.compute_stats(smooth_track, save_values=True)
+        return redirect("topopartner:view_track", tid=smooth_track.id)
+    return redirect("topopartner:view_track", tid=tid)
+
+
+def view_download_track(request, tid):
+    """Return the GPX of a track as an attachment.
+    """
+    track = get_track_from_tid(tid, required_user=request.user, allow_public=True)
+    response = HttpResponse(track.gpx, content_type="application/gpx+xml")
+    response["Content-Disposition"] =\
+        'attachment; filename="%s.gpx"' % slugify(track.label)
+    return response
+
+
+@permission_required("topopartner.delete_track")
+def view_delete_track(request, tid):
+    """Delete a track.
+    """
+    track = get_track_from_tid(tid, required_user=request.user)
+    is_itinerary = track.is_itinerary
+    track.delete()
+    if is_itinerary:
+        return redirect("topopartner:itineraries")
+    return redirect("topopartner:recordings")
+
+
+@permission_required("topopartner.view_track")
+def view_track_points(request, tid):
+    track = get_track_from_tid(tid, required_user=request.user)
+    data = [[trkpt.latitude, trkpt.longitude] for trkpt in track.iter_trackpoints()]
+    return HttpResponse(json.dumps(data), content_type="application/json")
+
+
 @permission_required("topopartner.change_linregmodel")
-def fit_linreg(request):
+def view_fit(request):
     """Fit the linear regression model.
     """
     linreg, _ = models.LinRegModel.objects.get_or_create(user=request.user)
@@ -312,11 +274,9 @@ def fit_linreg(request):
     return redirect("topopartner:recordings")
 
 
-def check_api_key(request):
-    key = request.GET.get("k")
-    if models.ApiKey.objects.filter(key=key).exists():
-        return models.ApiKey.objects.get(key=key).user
-    raise PermissionDenied
+# ----------------------------------------------- #
+# API                                             #
+# ----------------------------------------------- #
 
 
 def api_list_itineraries(request):
@@ -378,7 +338,7 @@ def api_post_recording(request):
         gpx=data["gpx"],
         is_itinerary=False,
         is_recording=True,
-        date_visited=dateutil.parser.parse(data["date_visited"]),
+        date_visited=datetime.datetime.fromisoformat(data["date_visited"]).date(),
     )
     try:
         utils.compute_stats(track, save_values=True)

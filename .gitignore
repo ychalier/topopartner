@@ -128,5 +128,6 @@ dmypy.json
 # Database
 db.sqlite3
 
-project/
+data/
+server/
 manage.py

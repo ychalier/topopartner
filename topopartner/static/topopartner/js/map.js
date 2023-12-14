@@ -7,7 +7,6 @@ https://leafletjs.com/reference-1.6.0.html
 
 ******************************************************************************/
 
-var WAYPOINT_CATEGORY_COLORS = {};
 var TRACK_COLOR = "rgba(200, 0, 15, .8)";
 
 
@@ -527,10 +526,6 @@ class Waypoint {
 
     updateViewIcon() {
         let backgroundColor = "#430c7a";
-        if (this.data.category != null &&
-            this.data.category in WAYPOINT_CATEGORY_COLORS) {
-            backgroundColor = WAYPOINT_CATEGORY_COLORS[this.data.category];
-        }
         let strokeWidth = 1;
         if (this.data.visited) {
             strokeWidth = 2;

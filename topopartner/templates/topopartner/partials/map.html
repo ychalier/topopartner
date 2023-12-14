@@ -32,4 +32,26 @@
 
 <div class="map" id="map"></div>
 
-<script type="text/javascript">{% include 'topopartner/map.js' %}</script>
+<script type="text/javascript">
+var mapWrapper = new MapWrapper();
+mapWrapper.defaultView.center.latitude = {{ mapdata.center.lat }};
+mapWrapper.defaultView.center.longitude = {{ mapdata.center.lng }};
+{% if not mapdata.track %}
+mapWrapper.defaultView.bounds.southwest = {{ mapdata.bounds.sw }};
+mapWrapper.defaultView.bounds.northeast = {{ mapdata.bounds.ne }};
+{% endif %}
+mapWrapper.createLeafletMap("map");
+{% if mapdata.edit == 'marker' %}
+mapWrapper.appendAddMarkerControl();
+{% endif %}
+{% if mapdata.edit == 'polyline' %}
+mapWrapper.appendAddPolylineControl();
+{% endif %}
+{% if mapdata.track %}
+var trackWrapper = new Track(mapWrapper);
+trackWrapper.latlngs = [{% for lat, lon in mapdata.track %}[{{ lat }}, {{ lon }}]{% if forloop.last %}{% else %}, {% endif %}{% endfor %}];
+trackWrapper.createLeafletPolyline({% if mapdata.edit == 'polyline' %}true{% else %}false{% endif %}, true);
+mapWrapper.leaflet.fitBounds(trackWrapper.leaflet.getBounds());
+{% endif %}
+setTimeout(function(){ mapWrapper.leaflet.invalidateSize()}, 400);
+</script>

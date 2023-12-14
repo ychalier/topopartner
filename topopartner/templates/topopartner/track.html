@@ -1,4 +1,4 @@
-{% extends 'topopartner/base.html' %}
+{% extends 'topopartner/layout/base.html' %}
 {% load mathfilters %}
 {% load static %}
 
@@ -12,16 +12,12 @@
 
 {% block main_content %}
 
-<div class="h1">
-    <a href="{% url 'topopartner:tracks' %}">{% if track.is_itinerary %}Itineraries{% else %}Recordings{% endif %} &#10093;</a>
-    {{ track.label }}
-</div>
+<h1>{{ track.label }}</h1>
 
 <div class="columns">
 
     <div class="column col-8 col-sm-12">
-        {% include 'topopartner/map.html' %}
-        <br>
+        {% include 'topopartner/partials/map.html' %}
     </div>
 
     <div class="column col-4 col-sm-12">
@@ -54,7 +50,7 @@
                         </a>
                     </div>
                     <div>
-                        <a href="{% url 'topopartner:gpx' tid=track.id %}" title="Download GPX file">
+                        <a href="{% url 'topopartner:download_track' tid=track.id %}" title="Download GPX file">
                             <span class="track-info-icon" ><i class="icon icon-map"></i></span>
                             Download GPX
                         </a>

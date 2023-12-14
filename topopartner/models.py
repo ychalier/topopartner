@@ -1,40 +1,9 @@
-# pylint: disable=C0114,E0401,E1101,E1135
-import io
 import datetime
+import io
+
 from django.db import models
 from django.conf import settings
 import gpxpy
-
-
-class WaypointCategory(models.Model):
-
-    name = models.CharField(max_length=100)
-    color = models.CharField(max_length=20)
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-
-    def __str__(self):
-        return self.name
-
-
-class Waypoint(models.Model):
-
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    latitude = models.FloatField()
-    longitude = models.FloatField()
-    label = models.CharField(max_length=255)
-    elevation = models.FloatField(blank=True, null=True)
-    comment = models.TextField(blank=True, null=True)
-    last_visit = models.DateField(blank=True, null=True)
-    visited = models.BooleanField(default=False)
-    date_visited = models.DateField(blank=True, null=True)
-    illustration = models.URLField(blank=True, null=True)
-    chaine_des_puys = models.BooleanField(default=False)
-    category = models.ForeignKey(WaypointCategory, on_delete=models.CASCADE, blank=True, null=True)
-
-    def __str__(self):
-        if self.category is None:
-            return "%s (%s, %s)" % (self.label, self.latitude, self.longitude)
-        return "[%s] %s (%s, %s)" % (self.category, self.label, self.latitude, self.longitude)
 
 
 class Track(models.Model):

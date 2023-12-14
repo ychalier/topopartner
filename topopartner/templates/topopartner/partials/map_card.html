@@ -3,7 +3,7 @@
 <div class="card my-2 {% if track.is_itinerary %}{% else %}{% endif %}">
     <div class="card-illustration">
         <a href="{% url 'topopartner:view_track' tid=track.id %}">
-            <div class="still-map video-responsive" id="still-map-{{ track.id }}" route="{% url 'topopartner:get_trackpoints' tid=track.id %}" }}"></div>
+            <div class="still-map video-responsive" id="still-map-{{ track.id }}" route="{% url 'topopartner:track_points' tid=track.id %}"></div>
         </a>
     </div>
     <div class="card-header">
@@ -23,6 +23,6 @@
     <div class="card-footer">
         <a class="btn btn-primary" href="{% url 'topopartner:view_track' tid=track.id %}">View</a>
         <a class="btn btn-link" href="{% url 'topopartner:edit_track' tid=track.id %}">Edit</a>
-        <a class="btn btn-link" href="{% url 'topopartner:gpx' tid=track.id %}">Download</a>
+        <a class="btn btn-link" href="{% url 'topopartner:download_track' tid=track.id %}">Download</a>
     </div>
 </div>

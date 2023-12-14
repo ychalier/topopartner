@@ -1,0 +1,56 @@
+{% load static %}
+
+{% load static %}
+
+<!DOCTYPE html>
+
+<html lang="{% block lang %}en{% endblock lang %}">
+
+<head>
+    <title>{% block title %}Topopartner{% endblock %}</title>
+    {% block head %}
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/ychalier/pifekit/pifekit.css" />
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/gh/ychalier/pifekit/pifekit.js"></script>
+    <link rel="stylesheet" href="{% static 'topopartner/css/topopartner.css' %}" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.6.0/dist/leaflet.css" integrity="sha512-xwE/Az9zrjBIphAcBb3F6JVqxf46+CDLwfLMHloNu6KEQCAWi6HcDUbeOfBIptF7tcCzusKFjFw2yuvEpDL9wQ==" crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js" integrity="sha512-gZwIG9x3wUXg2hdXF6+rVkLF/0Vi9U8D2Ntg4Ga5I5BZpVkVxlJWbSQtXPSiUTtC0TjtGOmxa1AJPuV0CPthew==" crossorigin=""></script>
+    <script src="{% static 'topopartner/leaflet-editable/Leaflet.Editable.js' %}"></script>
+    <script src="{% static 'topopartner/leaflet-editable/Path.Drag.js' %}"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.min.js"></script>
+    <script type="text/javascript">CSRF_TOKEN = "{{ csrf_token }}";</script>
+    {% endblock head %}
+</head>
+
+<body class="dark-green noise">
+    {% block body %}
+    <div class="columns col-gapless">
+        <div class="column col-3 col-xl-2 col-lg-2 col-md-1 col-sm-12"></div>
+        <div class="column col-6 col-xl-8 col-lg-8 col-md-10 col-sm-12">
+        {% block center_column %}
+            <div class="container">
+                <header class="navbar navbar-float container">
+                    {% block navbar %}
+                    <section class="navbar-section">
+                        <a href="{% url 'topopartner:landing' %}" class="navbar-brand mr-2">Topopartner</a>
+                        <a href="{% url 'topopartner:itineraries' %}" class="btn btn-{% if active == 'itineraries' %}primary{% else %}link{% endif %}">Itineraries</a>
+                        <a href="{% url 'topopartner:recordings' %}" class="btn btn-{% if active == 'recordings' %}primary{% else %}link{% endif %}">Recordings</a>
+                    </section>
+                    {% endblock navbar %}
+                </header>
+                <div>
+                {% block main_content_prev %}{% endblock main_content_prev %}
+                {% block main_content %}{% endblock main_content %}
+                {% block main_content_next %}{% endblock main_content_next %}
+                </div>
+            </div>
+        {% endblock center_column %}
+        </div>
+        <div class="column col-3 col-xl-2 col-lg-2 col-md-1 col-sm-12"></div>
+    </div>
+    {% endblock body %}
+    {% block body_scripts %}{% endblock body_scripts %}
+</body>
+
+</html>

@@ -1,0 +1,85 @@
+{% extends 'topopartner/layout/base.html' %}
+{% load mathfilters %}
+{% load static %}
+
+{% block title %}Recordings &mid; {{ block.super }}{% endblock title %}
+
+{% block head %}
+{{ block.super }}
+<script src="{% static 'topopartner/js/map.js' %}"></script>
+{% endblock head %}
+
+{% block main_content %}
+
+{% if recordings %}
+
+<div class="tab-container">
+
+    <ul class="tab">
+        <li class="tab-item"><a for="tab-grid">Grid</a></li>
+        <li class="tab-item"><a for="tab-table">Table</a></li>
+        <li class="tab-item tab-action">
+            <div class="input-group input-inline">
+                <a class="btn btn-primary btn-sm input-group-btn" href="{% url 'topopartner:upload_track' %}" title="Upload a recorded GPX track">Upload</a>
+                <a class="btn btn-primary btn-sm input-group-btn" href="{% url 'topopartner:fit' %}" title="Fit the linear regression model for predicting duration on those recorded tracks.">Fit</a>
+            </div>
+        </li>
+    </ul>
+
+    <div class="tab-content" id="tab-grid" style="overflow-x: hidden">
+        <div class="columns">
+            {% for track in recordings %}
+            <div class="column col-6 col-sm-12">
+                {% include 'topopartner/partials/map_card.html' %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="tab-content" id="tab-table">
+        <table class="table table-striped table-hover">
+            <tr>
+                <th>Label</th>
+                <th>Distance</th>
+                <th>Uphill</th>
+                <th>Downhill</th>
+                <th>Duration</th>
+                <th>Date</th>
+                <th>Public</th>
+            </tr>
+            {% for track in recordings %}
+            <tr>
+                <td class="highlight"><a class="transparent" href="{% url 'topopartner:view_track' tid=track.id%}">{{ track.label }}</a></td>
+                <td>{% if track.distance %}{{ track.distance | mul:.001 | floatformat }}km{% else %}&mdash;{% endif %}</td>
+                <td>{% if track.uphill %}{{ track.uphill | floatformat:"0" }}m{% else %}&mdash;{% endif %}</td>
+                <td>{% if track.downhill %}{{ track.downhill | floatformat:"0" }}m{% else %}&mdash;{% endif %}</td>
+                <td>{% if track.duration %}{{ track.pretty_duration }}{% else %}&mdash;{% endif %}</td>
+                <td>{{ track.date_visited }}</td>
+                <td>{% if track.public %}&check;{% else %}&mdash;{% endif %}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+
+</div>
+
+<h2>Current model</h2>
+
+<pre>Duration (s) = <span class="highlight">{{ linreg.intercept | floatformat }}</span> &plus; <span class="highlight">{{ linreg.coef_distance | floatformat }}</span> &times; Distance (m) &plus; <span class="highlight">{{ linreg.coef_uphill | floatformat }}</span> &times; Uphill (m)</pre>
+
+{% else %}
+<div class="empty">
+    <div class="empty-icon">
+        <i class="icon icon-4x icon-route"></i>
+    </div>
+    <p class="empty-title h5">Empty</p>
+    <p class="empty-subtitle">Click the button below to upload your first recording.</p>
+    <div class="empty-action">
+        <a class="btn btn-primary" href="{% url 'topopartner:upload_track' %}">Upload track</a>
+    </div>
+</div>
+{% endif %}
+
+{% include 'topopartner/partials/api_key.html' %}
+
+{% endblock main_content %}

@@ -1,0 +1,11 @@
+{% if api_key %}
+<div class="input-group censor-container">
+    <span class="input-group-addon"><a href="https://github.com/ychalier/topopartner-android">Android</a> API Key</span>
+    <input class="form-input censor-input" type="password" value="{{ api_key.key }}" disabled />
+    <button class="input-group-btn btn btn-primary censor-button">Show</button>
+</div>
+{% else %}
+<p>
+    You do not have an <a href="https://github.com/ychalier/topopartner-android">Android</a> API Key. If you think you should, please contact an admin.
+</p>
+{% endif %}

@@ -29,9 +29,9 @@ setup(
     ],
     install_requires=[
         "Django",
-        "requests",
         "django-mathfilters",
         "gpxpy",
         "numpy",
+        "requests",
     ],
 )
