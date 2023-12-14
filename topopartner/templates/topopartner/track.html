@@ -50,9 +50,15 @@
                         </a>
                     </div>
                     <div>
-                        <a href="{% url 'topopartner:download_track' tid=track.id %}" title="Download GPX file">
+                        <a href="{% url 'topopartner:download_track_gpx' tid=track.id %}" title="Download GPX file">
                             <span class="track-info-icon" ><i class="icon icon-map"></i></span>
                             Download GPX
+                        </a>
+                    </div>
+                    <div>
+                        <a href="{% url 'topopartner:download_track_stl' tid=track.id %}" title="Download STL file">
+                            <span class="track-info-icon" ><i class="icon icon-download"></i></span>
+                            Download STL
                         </a>
                     </div>
                 </div>

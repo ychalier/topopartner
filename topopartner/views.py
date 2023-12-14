@@ -1,5 +1,7 @@
 import datetime
 import json
+import os
+import tempfile
 
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
@@ -230,12 +232,30 @@ def view_smooth_track(request, tid):
 
 
 def view_download_track(request, tid):
+    return redirect("topopartner:download_track_gpx")
+
+
+def view_download_track_gpx(request, tid):
     """Return the GPX of a track as an attachment.
     """
     track = get_track_from_tid(tid, required_user=request.user, allow_public=True)
     response = HttpResponse(track.gpx, content_type="application/gpx+xml")
     response["Content-Disposition"] =\
         'attachment; filename="%s.gpx"' % slugify(track.label)
+    return response
+
+
+def view_download_track_stl(request, tid):
+    track = get_track_from_tid(tid, required_user=request.user, allow_public=True)
+    gpx = gpxpy.parse(track.gpx)
+    mesh = utils.threed_profile(gpx)
+    mesh_filename = os.path.join(tempfile.gettempdir(), slugify(track.label) + ".stl")
+    mesh.save(mesh_filename)
+    with open(mesh_filename, "rb") as file:
+        mesh_data = file.read()
+    os.remove(mesh_filename)
+    response = HttpResponse(mesh_data, content_type="model/stl")
+    response["Content-Disposition"] = f'attachment; filename="{slugify(track.label)}.stl"'
     return response
 
 

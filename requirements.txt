@@ -2,4 +2,5 @@ Django
 django-mathfilters
 gpxpy
 numpy
+numpy-stl
 requests

@@ -2,13 +2,14 @@
 """
 
 import io
-import re
-import math
 import logging
-import requests
-import numpy
+import math
+import re
+
 import gpxpy.gpx
-from . import models
+import numpy
+import requests
+import stl
 
 
 LOGGER = logging.getLogger(__name__)
@@ -242,3 +243,44 @@ def clean(track, smoothing_threshold, simplification_target_proportion):
         smooth(track, smoothing_threshold),
         simplification_target_proportion * len(track)
     )
+
+
+def threed_profile(gpx: gpxpy.gpx.GPX,
+            latitude_scale: float=1000, 
+            longitude_scale: float=1000,
+            elevation_scale: float=0.05) -> stl.mesh.Mesh:
+    points = [
+        point
+        for track in gpx.tracks
+        for segment in track.segments
+        for point in segment.points
+    ]
+    has_elevations = any([p.elevation for p in points])
+    minimum_elevation = 0
+    if has_elevations:
+        minimum_elevation = min([p.elevation for p in points if p.elevation is not None])
+    mean_latitude = sum([p.latitude for p in points]) / len(points)
+    mean_longitude = sum([p.longitude for p in points]) / len(points)
+    vertices = []
+    for point in points:
+        x = latitude_scale * (point.latitude - mean_latitude)
+        y = longitude_scale * (point.longitude - mean_longitude)
+        z = 50
+        if has_elevations:
+            if point.elevation is None:
+                z = minimum_elevation
+            else:
+                z = elevation_scale * (point.elevation - minimum_elevation)
+        vertices.append([x, y, 0])
+        vertices.append([x, y, z])
+    faces = []
+    for i in range(len(points) - 1):
+        faces.append([2 * i, 2 * i + 1, 2 * i + 2])
+        faces.append([2 * i + 2, 2 * i + 1, 2 * i + 3])
+    vertices = numpy.array(vertices)
+    faces = numpy.array(faces)
+    mesh = stl.mesh.Mesh(numpy.zeros(faces.shape[0], dtype=stl.mesh.Mesh.dtype))
+    for i, face in enumerate(faces):
+        for j in range(3):
+            mesh.vectors[i][j] = vertices[face[j],:]
+    return mesh

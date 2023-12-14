@@ -9,7 +9,7 @@ os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 
 setup(
     name='django-topopartner',
-    version='1.5.0',
+    version='1.6.0',
     packages=find_packages(),
     include_package_data=True,
     description='A Django app for topographic data management.',
@@ -32,6 +32,7 @@ setup(
         "django-mathfilters",
         "gpxpy",
         "numpy",
+        "numpy-stl",
         "requests",
     ],
 )
